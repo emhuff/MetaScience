@@ -1,0 +1,68 @@
+\documentclass{article}
+\begin{document}
+
+\section{Agent-based modeling of science}
+Goals: Demonstrate the consequences of the choice of diagnostics of cosmological parameter tensions within the context of large current missions. Explicitly show when ``garden of forking paths'' considerations, or data-dependent modeling choices, matter, and what the consequences are. Show how and when strategies like blinding experimental results can help, and when they cannot.
+
+Methods: We build an agent-based model for generating and interpreting data from cosmological experiments. Our data-generating process contains systematic errors, which the agents attempt to model, while also aiming to determine the nature of the model generating the data. We explore the consequences of a few decision rules that resemble those implemented by human cosmologists for the convergence of the process as a whole.
+
+
+\section{Architecture}
+This section describes the architecture of the simulation.
+
+\subsection{Cosmology}
+We adopt two fiducial models: a wCDM model and a LCDM model, both of which are consistent with Planck20XX.
+
+\subsection{Data Generator}
+This section describes the data vectors we generate.
+
+
+\subsubsection{Idealized Data}
+
+\paragraph{CMB}
+We generate a CMB power spectrum ($C_\ell$) measurement.
+
+\paragraph{Matter Power Spectrum}
+We generate a matter power spectrum, as inferred from lensing or galaxy clustering or some other clever thing..
+
+\paragraph{Supernova}
+This could be any standard candle or standard ruler measurement.
+
+\subsubsection{Noise}
+Each of these measurements has irreducible noise, arising from cosmic variance and other (unbiased) sources of measurement error.
+
+\subsubsection{Systematic Errors}
+There's a true systematic error in each of these data sets, and an ascending hierarchy of complexity that the experiments can use (if forced to) in order to try to model it.
+
+
+\subsection{Interpretation}
+
+
+\subsubsection{Model fitting}
+Each data set is fit to a model.
+
+
+\subsubsection{Tension Assessment}
+One of the tension metrics is used to assess concordance.
+
+\subsubsection{Decision Rules}
+We write down a decision rule that gets followed in the absence of concordance.
+
+\subsubsection{Systematic Error Modeling Update}
+As a result of the decision rules, the consensus may conclude that one or more contributing experiments need to update their systematic errors. The Consensus issues instructions to this effect.
+  
+
+\subsection{Procedure} 
+
+\begin{enumerate}
+\item Each experiment {\it collects data}.
+\item Each experiment {\it fits a model}, including both cosmological and nuisance parameters.
+\item Each experiment {\it reports its posterior } to the Consensus module.
+\item The consensus {\it estimates the degree of tension.}
+\item Given the combination of tensions between experiments, and its internal {\it decision rule}, the Consensus {\it issues nuisance model update instructions to zero or more experiments}, or {\it updates the consensus cosmological model}.
+\item Any experiments ordered to update their nuisance models do so, and then the process repeats.
+\end{enumerate}
+
+We monitor the collective posterior of the Consensus, and see whether and how quickly it shrinks around the true model.
+
+\end{document}
