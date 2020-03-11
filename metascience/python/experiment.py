@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import numpy as np
 
 class Experiment():
     def __init__(self):
@@ -45,7 +46,7 @@ class Experiment():
         pass
 
     def generate_data():
-        self._make_ideal_data_vector():
+        self._get_ideal_data_vector():
         self._add_noise()
         self._add_systematics()
 
@@ -67,10 +68,17 @@ class PendulumExperiment(Experiment):
     def __init__(self,cosmology = None, systematics_model = None, noise_model = None):
         super().__init__()
         self.kind = 'pendulum'
-        self.cosmology = cosmology
+        self.cosmology = cosmology #params: g, T, L
+            'cosmology will be "g"'
 
     def _set_systematics(systematics_model):
         pass
 
     def _set_noise(noise_model):
         pass
+
+    def _get_ideal_data_vector(length):
+        theta = theta_0* np.cos(np.sqrt(constant_g/constant_l)* time)
+        return period
+
+
