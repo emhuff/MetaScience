@@ -7,46 +7,46 @@ class Experiment():
         pass
 
     @property
-    def cosmology():
+    def cosmology(self):
         '''
         Need to specify the cosmology.
         '''
         raise NotImplementedError()
 
     @property
-    def systematics():
+    def systematics(self):
         '''
         Need to specify the systematic error model.
         '''
         raise NotImplementedError()
 
     @property
-    def noise():
+    def noise(self):
         '''
         Need to specify the noise model.
         '''
         raise NotImplementedError()
 
     @property
-    def kind():
+    def kind(self):
         '''
         What experiment is this? Know thyself, object.
         '''
 
     @abstractmethod
-    def _get_ideal_data_vector():
+    def _get_ideal_data_vector(self):
         # generate the ideal data vector from the cosmology.
         pass
 
     @abstractmethod
-    def _add_systematics():
+    def _add_systematics(self):
         pass
 
     @abstractmethod
-    def _add_noise():
+    def _add_noise(self):
         pass
 
-    def generate_data():
+    def generate_data(self):
         '''
         Generate data based on a few functions designed in the class
         '''
@@ -85,7 +85,7 @@ class SimplePendulumExperiment(Experiment):
                     noise_parameters = None,
                     systematics_parameters = None,
                     seed=999):
-        super().__init__()
+        super().__init__(self)
         self.kind = 'pendulum'
         self.constant_g = cosmology_parameters['constant_g']
         self.constant_l = nuisance_parameters['constant_l']
@@ -101,7 +101,7 @@ class SimplePendulumExperiment(Experiment):
         #"cosmology" params: g
         #"astrophysical (nuisance)"  params: l
 
-    def _get_ideal_data_vector():
+    def _get_ideal_data_vector(self):
         '''
         Generate ideal data vector from cosmology parameters, nuisance parameters, and experimental parameters
         '''
@@ -118,21 +118,30 @@ class SimplePendulumExperiment(Experiment):
         #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
 
         def forcing_function(t):
+            '''
+            output amplitude as a function of time
+            '''
             return A*np.cos(wd*t+phid)
 
         def oscillator_eqns(t,y):
+            '''
+            general equations of motion for an oscillator
+            '''
             x = y[0]
             u = y[1]
             xp = u
             up = (forcing_function(t) - c*u - l*x)/g
             return np.array([xp,up])
 
+        # total time over which we perform the integration
         interval = self.number_of_measurements * self.time_between_measurements
-        solution = solver(oscillator_eqns,interval, np.array([self.theta_0,self.theta_v0]), t_eval = self.times)
+
+        # solving the oscillator equations of motion for the total interval
+        solution = solver(oscillator_eqns,interval, np.array([self.theta_0, self.theta_v0]), t_eval = self.times)
 
         return solution.y
 
-    def _add_systematics():
+    def _add_systematics(self):
         '''
         Creating a 'boost' by multiplying the normal linear gradient of data/time
         by a boost (driving) factor
@@ -144,7 +153,7 @@ class SimplePendulumExperiment(Experiment):
         systematics_vector = self.boost_deriv * (data_deriv / time_deriv) # multiply the ratio of ddata/dtime by boost factor
         return self.data_vector + systematics_vector # add systematics to data vector
 
-    def _add_noise():
+    def _add_noise(self):
         '''
         Add noise from noise parrameters and measurements
         '''
