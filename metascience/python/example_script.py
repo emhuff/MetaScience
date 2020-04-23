@@ -28,11 +28,11 @@ seed=999
 
 # Create an instance of the Experiment class:
 
-myPendulum = experiment.SimplePendulumExperiment(cosmology_parameters = None,
-                                                 nuisance_parameters = None,
-                                                 experimental_parameters = None,
-                                                 noise_parameters = None,
-                                                 systematics_parameters = None,
+myPendulum = experiment.SimplePendulumExperiment(cosmology_parameters = cosmology_parameters,
+                                                 nuisance_parameters = nuisance_parameters,
+                                                 experimental_parameters = experimental_parameters,
+                                                 noise_parameters = noise_parameters,
+                                                 systematics_parameters = systematics_parameters,
                                                  seed = 999)
 
 # Get a data vector.
@@ -40,6 +40,8 @@ myPendulum.generate_data()
 data = myPendulum.data_vector
 # Maybe do some plotting?
 plt.plot(data)
+plt.ylabel('Theta')
+plt.xlabel('Time')
 plt.show()
 
 

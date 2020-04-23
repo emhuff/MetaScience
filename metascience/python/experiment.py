@@ -4,34 +4,7 @@ from scipy.integrate import solve_ivp as solver
 
 class Experiment(metaclass=ABCMeta):
     def __init__(self):
-        pass
-
-    @abstractmethod
-    def cosmology(self):
-        '''
-        Need to specify the cosmology.
-        '''
-        raise NotImplementedError()
-
-    @abstractmethod
-    def systematics(self):
-        '''
-        Need to specify the systematic error model.
-        '''
-        raise NotImplementedError()
-
-    @abstractmethod
-    def noise(self):
-        '''
-        Need to specify the noise model.
-        '''
-        raise NotImplementedError()
-
-    @abstractproperty
-    def kind(self):
-        '''
-        What experiment is this? Know thyself, object.
-        '''
+        self.kind = None
         pass
 
     @abstractmethod
