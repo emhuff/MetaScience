@@ -8,12 +8,13 @@ cosmology_parameters = {}
 cosmology_parameters['constant_g']
 
 nuisance_parameters = {}
-nuisance_parameters = {'constant_l'}
+nuisance_parameters['constant_l']
 
 
 noise_parameters = {}
 systematics_parameters = {}
 experimental_parameters = {}
+experimental_parameters['time_between_measurements']
 
 seed=999
 ## etc... finish defining the necessary parameters
@@ -29,7 +30,7 @@ myPendulum = experiment.SimplePendulumExperiment(cosmology_parameters = None,
                                                  seed=999)
 
 # Get a data vector.
-data = myPendulum.generate_data
+data = myPendulum.generate_data()
 
 # Maybe do some plotting?
 plt.plot(data)
