@@ -111,7 +111,7 @@ class SimplePendulumExperiment(Experiment):
         interval = self.number_of_measurements * self.time_between_measurements
 
         # solving the oscillator equations of motion for the total interval
-        solution = solver(oscillator_eqns, interval, np.array([self.theta_0, self.theta_v0]), t_eval = self.times)
+        solution = solver(oscillator_eqns, interval, np.array([self.constant_theta_0, self.constant_theta_v0]), t_eval = self.times)
 
         return solution.y
 
