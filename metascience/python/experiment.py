@@ -1,37 +1,38 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod,abstractproperty
 import numpy as np
 from scipy.integrate import solve_ivp as solver
 
-class Experiment():
+class Experiment(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    @property
+    @abstractmethod
     def cosmology(self):
         '''
         Need to specify the cosmology.
         '''
         raise NotImplementedError()
 
-    @property
+    @abstractmethod
     def systematics(self):
         '''
         Need to specify the systematic error model.
         '''
         raise NotImplementedError()
 
-    @property
+    @abstractmethod
     def noise(self):
         '''
         Need to specify the noise model.
         '''
         raise NotImplementedError()
 
-    @property
+    @abstractproperty
     def kind(self):
         '''
         What experiment is this? Know thyself, object.
         '''
+        pass
 
     @abstractmethod
     def _get_ideal_data_vector(self):
@@ -85,7 +86,7 @@ class SimplePendulumExperiment(Experiment):
                     noise_parameters = None,
                     systematics_parameters = None,
                     seed=999):
-        super().__init__(self)
+        super().__init__()
         self.kind = 'pendulum'
         self.constant_g = cosmology_parameters['constant_g']
         self.constant_l = nuisance_parameters['constant_l']
@@ -130,14 +131,14 @@ class SimplePendulumExperiment(Experiment):
             x = y[0]
             u = y[1]
             xp = u
-            up = (forcing_function(t) - c*u - l*x)/g
+            up = (forcing_function(t) - c * u - l * x) / g
             return np.array([xp,up])
 
         # total time over which we perform the integration
         interval = self.number_of_measurements * self.time_between_measurements
 
         # solving the oscillator equations of motion for the total interval
-        solution = solver(oscillator_eqns,interval, np.array([self.theta_0, self.theta_v0]), t_eval = self.times)
+        solution = solver(oscillator_eqns, interval, np.array([self.theta_0, self.theta_v0]), t_eval = self.times)
 
         return solution.y
 
