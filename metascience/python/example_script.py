@@ -9,8 +9,8 @@ cosmology_parameters['constant_g'] = 9.8
 
 nuisance_parameters = {}
 nuisance_parameters['constant_l'] = 2.0
-nuisance_parameters['constant_theta_0'] = 0.1
-nuisance_parameters['constant_theta_v0'] =0.1
+nuisance_parameters['constant_theta_0'] = 3.0
+nuisance_parameters['constant_theta_v0'] =0.5
 
 
 noise_parameters = {}
