@@ -43,24 +43,26 @@ class ExperimentInterpreter(metaclass=ABCMeta):
         '''
         check that the interpreter has the inputs that are appropriate for then
         experiment
+        check that the data vector from the experiment module match interpret
+        assert?
         '''
         pass
 
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
-                    times = None,
-                    experiment = None,
-                    measured_data_vector = None,
-                    cosmology_parameters = None,
-                    nuisance_parameters = None,
-                    experimental_parameters = None,
-                    noise_parameters = None,
-                    systematics_parameters = None ):
+                 experiment = None,
+                 cosmology_parameters = None,
+                 nuisance_parameters = None,
+                 noise_parameters = None,
+                 systematics_parameters = None ):
 
         '''
         notes:
             why doesn't covariance include all errors (i.e., systematics)?
             I don't think we need cosmo, nuisance, expt params as inputs
+
+            ... times: input data
+            ...
         '''
 
         super().__init__()
@@ -78,9 +80,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         Adding systematics here that don't match the input systematics, becuase
         ... we don't know what they are!
         '''
-        order_of_function = len(self.systematics_parameters)
-        added_systematics_vector = scipy.special.hankel1(order_of_function, a_data_vector)
-        new_data_vector = a_data_vector + added_systematics_vector
+        if self.systematics_parameters['function'] == 'hankel':
+            order_of_function = len(self.systematics_parameters['coeff'])
+            added_systematics_vector = scipy.special.hankel1(order_of_function, a_data_vector)
+            new_data_vector = a_data_vector + added_systematics_vector
+        else:
+            raise NotImplementedError
 
         return new_data_vector
 
