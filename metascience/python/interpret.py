@@ -38,9 +38,18 @@ class ExperimentInterpreter(metaclass=ABCMeta):
         '''
         pass
 
+    @abstractmethod
+    def check_inputs():
+        '''
+        check that the interpreter has the inputs that are appropriate for then
+        experiment
+        '''
+        pass
+
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
                     times = None,
+                    experiment = None,
                     measured_data_vector = None,
                     cosmology_parameters = None,
                     nuisance_parameters = None,
@@ -55,11 +64,13 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         '''
 
         super().__init__()
+        self.kind = 'pendulum'
         self.measured_data_vector = measured_data_vector
         self.covariance = np.eye(np.ones_like(self.measured_data_vector)
             + noise_parameters['noise_std_dev']**2)
         self.times = times
         self.best_fit_parameters = None
+
 
     def _add_systematics(a_data_vector):
         '''
@@ -69,7 +80,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         '''
         order_of_function = len(self.systematics_parameters)
         added_systematics_vector = scipy.special.hankel1(order_of_function, a_data_vector)
-        new_data_vector = a_data_vector+added_systematics_vector
+        new_data_vector = a_data_vector + added_systematics_vector
 
         return new_data_vector
 
@@ -98,7 +109,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         notes:
             maybe we need an explicit jacobian because the model has cosine in it?
         '''
-        self.best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method='lm')
+        self.best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,
+            method='lm')
         return self.best_fit_parameters
 
 

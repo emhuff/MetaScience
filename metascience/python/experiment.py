@@ -47,7 +47,10 @@ class Experiment():
         pass
 
     def generate_data():
-        self._get_ideal_data_vector():
+        '''
+        Generate data based on a few functions designed in the class
+        '''
+        self._get_ideal_data_vector()
         self._add_noise()
         self.data_vector = self._add_systematics()
 
@@ -133,6 +136,8 @@ class SimplePendulumExperiment(Experiment):
         '''
         Creating a 'boost' by multiplying the normal linear gradient of data/time
         by a boost (driving) factor
+        adding a systematic error
+
         '''
         time_deriv = self.times - self.times[::-1] # compute the time deriv vector
         data_deriv = self.data_vector - self.data_vector[::-1] #compute the data deriv vector
