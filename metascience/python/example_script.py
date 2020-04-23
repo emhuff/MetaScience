@@ -18,6 +18,10 @@ noise_parameters['noise_std_dev'] = 0.5
 
 systematics_parameters = {}
 systematics_parameters['boost_deriv']  = 5
+systematics_parameters['drag_coeff'] = 0.3
+systematics_parameters['driving_amp'] = 0.1
+systematics_parameters['driving_freq'] = 2
+systematics_parameters['driving_phase'] = 0.4
 
 experimental_parameters = {}
 experimental_parameters['time_between_measurements'] = 0.1
