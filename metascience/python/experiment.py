@@ -107,7 +107,7 @@ class SimplePendulumExperiment(Experiment):
             up = (forcing_function(t) - c * u - l * x) / g
             return np.array([xp,up])
 
-        # total time over which we perform the integration
+        # minimum and maximum times over which the solution should be calculated
         interval = (np.min(self.times),np.max(self.times))
 
         # solving the oscillator equations of motion for the total interval

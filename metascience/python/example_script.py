@@ -15,7 +15,7 @@ nuisance_parameters['constant_theta_v0'] =0.5
 
 
 noise_parameters = {}
-noise_parameters['noise_std_dev'] = 0.5
+noise_parameters['noise_std_dev'] = 0.01
 
 systematics_parameters = {}
 systematics_parameters['boost_deriv']  = 5
@@ -25,8 +25,8 @@ systematics_parameters['driving_freq'] = 2
 systematics_parameters['driving_phase'] = 0.4
 
 experimental_parameters = {}
-experimental_parameters['time_between_measurements'] = 0.1
-experimental_parameters['number_of_measurements'] = 10
+experimental_parameters['time_between_measurements'] = 0.01
+experimental_parameters['number_of_measurements'] = 200
 
 seed=999
 
@@ -42,9 +42,12 @@ myPendulum = experiment.SimplePendulumExperiment(cosmology_parameters = cosmolog
 
 # Get a data vector.
 myPendulum.generate_data()
-data = myPendulum.data_vector
+ideal_data = myPendulum.ideal_data_vector
+real_data =  myPendulum.data_vector
 # Maybe do some plotting?
-plt.plot(data)
+plt.plot(ideal_data,label = 'without sys.')
+plt.plot(real_data,label ='with sys.')
+plt.legend(loc='best')
 plt.ylabel('Theta')
 plt.xlabel('Time')
 plt.show()
