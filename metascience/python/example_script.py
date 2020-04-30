@@ -25,10 +25,10 @@ systematics_parameters['driving_freq'] = 2
 systematics_parameters['driving_phase'] = 0.4
 
 experimental_parameters = {}
-experimental_parameters['time_between_measurements'] = 0.01
+experimental_parameters['time_between_measurements'] = .01
 experimental_parameters['number_of_measurements'] = 500
 
-seed=999
+seed = 999
 
 
 # Create an instance of the Experiment class:
@@ -45,11 +45,15 @@ myPendulum.generate_data()
 ideal_data = myPendulum.ideal_data_vector
 real_data =  myPendulum.data_vector
 # Maybe do some plotting?
-plt.plot(myPendulum.times, ideal_data,label = 'without sys.')
-plt.plot(myPendulum.times,real_data,label = 'with sys.')
-plt.legend(loc = 'best')
-plt.ylabel('Theta')
-plt.xlabel('Time')
+fig,(ax1,ax2) = plt.subplots(nrows=1,ncols=2,figsize=(14,7))
+ax1.plot(myPendulum.times, ideal_data,label = 'without noise,sys.')
+ax1.plot(myPendulum.times,real_data,label = 'with noise,sys.')
+ax1.legend(loc = 'best')
+ax1.set_ylabel('Theta')
+ax1.set_xlabel('Time')
+ax2.plot(myPendulum.times, real_data - ideal_data)
+ax1.set_ylabel('residuals')
+ax1.set_xlabel('Time')
 plt.show()
 
 
