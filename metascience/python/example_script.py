@@ -1,7 +1,8 @@
 import matplotlib.pyplot as pyplot
 import experiment
 import interpret
-
+import matplotlib.pyplot as plt
+import numpy as np
 # Choose a set of parameters
 
 cosmology_parameters = {}

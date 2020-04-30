@@ -108,12 +108,12 @@ class SimplePendulumExperiment(Experiment):
             return np.array([xp,up])
 
         # total time over which we perform the integration
-        interval = self.number_of_measurements * self.time_between_measurements
+        interval = (np.min(self.times),np.max(self.times))
 
         # solving the oscillator equations of motion for the total interval
         solution = solver(oscillator_eqns, interval, np.array([self.constant_theta_0, self.constant_theta_v0]), t_eval = self.times)
-
-        return solution.y
+        self.ideal_data_vector = solution.y[0]
+        return solution.y[0]
 
     def _add_systematics(self):
         '''
