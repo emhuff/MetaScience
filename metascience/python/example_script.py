@@ -6,12 +6,12 @@ import numpy as np
 # Choose a set of parameters
 
 cosmology_parameters = {}
-cosmology_parameters['constant_g'] = 9.8
+cosmology_parameters['constant_g'] = 1000.0
 
 nuisance_parameters = {}
-nuisance_parameters['constant_l'] = 2.0
-nuisance_parameters['constant_theta_0'] = 3.0
-nuisance_parameters['constant_theta_v0'] =0.5
+nuisance_parameters['constant_l'] = 10.0
+nuisance_parameters['constant_theta_0'] = 10.0
+nuisance_parameters['constant_theta_v0'] =0.1
 
 
 noise_parameters = {}
@@ -26,7 +26,7 @@ systematics_parameters['driving_phase'] = 0.4
 
 experimental_parameters = {}
 experimental_parameters['time_between_measurements'] = 0.01
-experimental_parameters['number_of_measurements'] = 200
+experimental_parameters['number_of_measurements'] = 500
 
 seed=999
 
@@ -46,8 +46,8 @@ ideal_data = myPendulum.ideal_data_vector
 real_data =  myPendulum.data_vector
 # Maybe do some plotting?
 plt.plot(ideal_data,label = 'without sys.')
-plt.plot(real_data,label ='with sys.')
-plt.legend(loc='best')
+plt.plot(real_data,label = 'with sys.')
+plt.legend(loc = 'best')
 plt.ylabel('Theta')
 plt.xlabel('Time')
 plt.show()
