@@ -18,7 +18,7 @@ noise_parameters = {}
 noise_parameters['noise_std_dev'] = 0.01
 
 systematics_parameters = {}
-systematics_parameters['boost_deriv']  = 5
+systematics_parameters['boost_deriv']  = 0.2
 systematics_parameters['drag_coeff'] = 0.3
 systematics_parameters['driving_amp'] = 0.1
 systematics_parameters['driving_freq'] = 2
@@ -45,8 +45,8 @@ myPendulum.generate_data()
 ideal_data = myPendulum.ideal_data_vector
 real_data =  myPendulum.data_vector
 # Maybe do some plotting?
-plt.plot(ideal_data,label = 'without sys.')
-plt.plot(real_data,label = 'with sys.')
+plt.plot(myPendulum.times, ideal_data,label = 'without sys.')
+plt.plot(myPendulum.times,real_data,label = 'with sys.')
 plt.legend(loc = 'best')
 plt.ylabel('Theta')
 plt.xlabel('Time')
