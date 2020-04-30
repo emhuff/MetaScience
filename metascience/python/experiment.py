@@ -77,7 +77,8 @@ class SimplePendulumExperiment(Experiment):
 
     def _get_ideal_data_vector(self):
         '''
-        Generate ideal data vector from cosmology parameters, nuisance parameters, and experimental parameters
+        Generate ideal data vector from cosmology parameters, nuisance
+        parameters, and experimental parameters
         '''
         g = self.constant_g
         l = self.constant_l

@@ -3,7 +3,7 @@ from scipy.integrate import solve_ivp as solver
 import pdb
 import matplotlib.pyplot as plt
 
-def generate_oscillator_timeseries(pars,t0,y0,interval = None, t_obs = None):
+def generate_oscillator_timeseries(pars, t0, y0, interval = None, t_obs = None):
 
     # Cosmological parameters
     k = pars[0]
@@ -25,7 +25,7 @@ def generate_oscillator_timeseries(pars,t0,y0,interval = None, t_obs = None):
         up = (forcing_function(t) - c*u - k*x)/m
         return np.array([xp,up])
 
-    
+
     solution = solver(oscillator_eqns,interval, y0, t_eval = t_obs)
     return solution
 
@@ -35,8 +35,9 @@ if __name__=='__main__':
     t_span = (np.min(t_solution), np.max(t_solution))
     t0 = 0.0
     y0 = np.array([0.0, 1.0])
-    
-    solution = generate_oscillator_timeseries(parameters,t0,y0,interval=t_span,t_obs = t_solution)
-    plt.plot(solution.t,solution.y[0])
+
+    solution = generate_oscillator_timeseries(parameters, t0, y0,
+        interval = t_span, t_obs = t_solution)
+    plt.plot(solution.t, solution.y[0])
     plt.show()
     pdb.set_trace()

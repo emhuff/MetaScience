@@ -1,6 +1,7 @@
 import matplotlib.pyplot as pyplot
 import experiment
 import interpret
+import consensus
 import matplotlib.pyplot as plt
 import numpy as np
 # Choose a set of parameters
@@ -31,8 +32,8 @@ experimental_parameters['number_of_measurements'] = 500
 seed = 999
 
 
+# ==================================================================
 # Create an instance of the Experiment class:
-
 myPendulum = experiment.SimplePendulumExperiment(cosmology_parameters = cosmology_parameters,
                                                  nuisance_parameters = nuisance_parameters,
                                                  experimental_parameters = experimental_parameters,
@@ -52,11 +53,13 @@ ax1.legend(loc = 'best')
 ax1.set_ylabel('Theta')
 ax1.set_xlabel('Time')
 ax2.plot(myPendulum.times, real_data - ideal_data)
-ax1.set_ylabel('residuals')
-ax1.set_xlabel('Time')
+ax2.set_ylabel('residuals')
+ax2.set_xlabel('Time')
+plt.tight_layout()
 plt.show()
 
 
+# ==================================================================
 # Now we want to try interpreting the results of the experiment.
 # once we've run myPendulum.generate_data()
 # Define a bunch of new parameters that will govern the experiment.
@@ -75,8 +78,16 @@ interpreter_systematics_parameters = {}
 interpreter_systematics_parameters['function']  = 'hankel'
 interpreter_systematics_parameters['coeff'] = np.zeros(2)
 
-myPendulumIntepreter = interpret.SimplePendulumExperimentInterpreter(experiment = None,
+myPendulumIntepreter = interpret.SimplePendulumExperimentInterpreter(experiment = myPendulum,
                                     cosmology_parameters = interpreter_cosmology_parameters,
                                     nuisance_parameters = interpreter_nuisance_parameters,
                                     noise_parameters = interpreter_noise_parameters,
                                     systematics_parameters = interpreter_systematics_parameters )
+
+myPendulumIntepreter.fit_model()
+print("cosmological parameters, best fit:")
+print(myPendulum.best_fit_cosmological_parameters)
+print("nuisance parameters, best fit:")
+print(myPendulumIntepreter.best_fit_nuisance_parameters)
+
+this_consensus = consensus.AlwaysBetOnMeConsensus(interprations = [myPendulumIntepreter,myOtherPendulumInterpreter, etcInterpreter])

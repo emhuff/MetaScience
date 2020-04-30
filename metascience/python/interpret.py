@@ -1,16 +1,10 @@
 from abc import ABCMeta, abstractmethod
-
+import numpy as np
 
 class ExperimentInterpreter(metaclass=ABCMeta):
     def __init__(self):
+        self.kind = None
         pass
-
-    @property
-    def kind():
-        '''
-        What kind of experiment is being interpreted?
-        '''
-        raise NotImplementedError
 
     @abstractmethod
     def evaluate_logL(parameters):
@@ -39,7 +33,7 @@ class ExperimentInterpreter(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def check_inputs():
+    def _check_inputs():
         '''
         check that the interpreter has the inputs that are appropriate for then
         experiment
@@ -67,11 +61,29 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         super().__init__()
         self.kind = 'pendulum'
-        self.measured_data_vector = measured_data_vector
-        self.covariance = np.eye(np.ones_like(self.measured_data_vector)
+        self.measured_data_vector = experiment.data_vector
+        self.covariance = np.diag(np.zeros_like(self.measured_data_vector)
             + noise_parameters['noise_std_dev']**2)
-        self.times = times
-        self.best_fit_parameters = None
+        self.times = experiment.times
+        ## The below parameters are stored by name in the experiment module.
+        self.best_fit_cosmological_parameters = cosmology_parameters
+        self.best_fit_nuisance_parameters = nuisance_parameters
+        self.fit_status = None
+
+    def _check_inputs(experiment, cosmology_parameters, nuisance_parameters,
+        noise_parameters, systematics_parameters):
+        '''
+        check specific input for the interpretation of this experimental
+        ... existence of particular parameters in dictionaries
+        ... types of data for these parameters
+        ... dimensions of data data for these parameters
+        ... experiment is instance of the relevant class?
+        '''
+
+        # check experiment isinstance
+        #assert(isinstance(experiment, SimplePendulumExperiment))
+
+        #assert(cosmology_)
 
 
     def _add_systematics(a_data_vector):
@@ -82,7 +94,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         '''
         if self.systematics_parameters['function'] == 'hankel':
             order_of_function = len(self.systematics_parameters['coeff'])
-            added_systematics_vector = scipy.special.hankel1(order_of_function, a_data_vector)
+            added_systematics_vector = scipy.special.hankel1(order_of_function,
+                a_data_vector)
             new_data_vector = a_data_vector + added_systematics_vector
         else:
             raise NotImplementedError
@@ -100,26 +113,32 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         constant_g = parameters[0]
         constant_l = parameters[1]
         constant_theta_0 = parameters[2]
+        constant_phase = parameters[3]
         model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
-            constant_l) * self.times)
+            constant_l) * self.times + constant_phase)
         model_with_systematics = self._add_systematics(model_data_vector)
         delta = model_with_systematics - self.measured_data_vector
         chisq = np.dot(delta,delta) / self.covariance
 
         return chisq
 
-    def fit_model(guess):
+    def fit_model(self):
         '''
         Fit a model to generate a posterior of best-fit parameters
         notes:
             maybe we need an explicit jacobian because the model has cosine in it?
         '''
-        self.best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,
+        guess = np.array([self.cosmology_parameters['constant_g'],
+                          self.nuisance_parameters['constant_l'],
+                          self.nuisance_parameters['constant_theta_0'],
+                          self.nuisance_parameters['constant_theta_v0']])
+        best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,
             method='lm')
-        return self.best_fit_parameters
+        self.best_fit_cosmological_parameters = best_fit_parameters.x[0]
+        self.best_fit_nuisance_parameters = best_fit_parameters.x[1:]
+        self.fit_status = best_fit_parameters.success
 
-
-    def elaborate_systematics():
+    def elaborate_systematics(self):
 
         # some conditional logic here
         # then:
