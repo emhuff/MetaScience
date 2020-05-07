@@ -1,7 +1,7 @@
 import matplotlib.pyplot as pyplot
 import experiment
 import interpret
-import consensus
+#import consensus
 import matplotlib.pyplot as plt
 import numpy as np
 # Choose a set of parameters
@@ -90,4 +90,4 @@ print(myPendulum.best_fit_cosmological_parameters)
 print("nuisance parameters, best fit:")
 print(myPendulumIntepreter.best_fit_nuisance_parameters)
 
-this_consensus = consensus.AlwaysBetOnMeConsensus(interprations = [myPendulumIntepreter,myOtherPendulumInterpreter, etcInterpreter])
+#this_consensus = consensus.AlwaysBetOnMeConsensus(interprations = [myPendulumIntepreter,myOtherPendulumInterpreter, etcInterpreter])
