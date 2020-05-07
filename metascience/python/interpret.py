@@ -47,9 +47,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                  experiment = None,
                  cosmology_parameters = None,
                  nuisance_parameters = None,
+                 systematics_parameters = None,
                  noise_parameters = None,
-                 priors = None,
-                 systematics_parameters = None ):
+                 prior = None
+                 ):
 
         '''
         notes:
@@ -58,6 +59,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
             ... times: input data
             ...
+            inputs:
+                parameters are all dictionaries
+                experiment: object
+                prior: object
+
+
         '''
 
         super().__init__()
@@ -71,8 +78,18 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_nuisance_parameters = nuisance_parameters
         self.fit_status = None
 
-    def _generate_initial_guess(self):
-        pass
+        self._cosmology_parameter_names = self.cosmology_parameters.keys()
+        self._nuisance_parameter_names = self.nuisance_parameters.keys()
+        self._systematics_parameter_names = self.systematics_parameters.keys()
+        self._parameter_names = [self._cosmology_parameter_names,
+            self._nuisance_parameter_names,
+            self._systematics_parameter_names]
+
+    def _generate_guess(self):
+        c_guess = [self.cosmology_parameters[key] for key in self._cosmology_parameter_names]
+        n_guess = [self.nuisance_parameters[key] for key in self._nuisance_parameter_names]
+        s_guess = [self.systematics_parameters[key] for key in self._systematics_parameter_names]
+        guess = np.concatenate([c_guess,n_guess,s_guess])
 
     def _check_inputs(experiment, cosmology_parameters, nuisance_parameters,
         noise_parameters, systematics_parameters):
@@ -114,14 +131,26 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             is the syntax right for something dotted with itself?
             is the covariance attached in the right way?
         '''
-        constant_g = parameters[0]
-        constant_l = parameters[1]
-        constant_theta_0 = parameters[2]
-        constant_phase = parameters[3]
+
+
+
+        # identify parameters by name to connect with functional form in th emodel
+        constant_g = parameters[ self._parameter_names.index('constant_g') ]
+        constant_l = parameters[ self._parameter_names.index('constant_l') ]
+        constant_theta_0 = parameters[ self._parameter_names.index('constant_theta_0') ]
+        constant_phase = parameters[ self._parameter_names.index('constant_phase') ]
+
+        # define model for data with parameters above
         model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
             constant_l) * self.times + constant_phase)
+
+        # add systematics to the model
         model_with_systematics = self._add_systematics(model_data_vector)
+
+        # calculate difference between model and data
         delta = model_with_systematics - self.measured_data_vector
+
+        # calcualte chisq
         chisq = np.dot(delta,delta) / self.covariance
 
         return chisq
@@ -132,14 +161,22 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         notes:
             maybe we need an explicit jacobian because the model has cosine in it?
         '''
-        guess = np.array([self.cosmology_parameters['constant_g'],
-                          self.nuisance_parameters['constant_l'],
-                          self.nuisance_parameters['constant_theta_0'],
-                          self.nuisance_parameters['constant_theta_v0']])
+        # generate a guess in the right order.
+        guess = self._generate_guess()
+
+        # fit for parameters
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,
-            method='lm')
-        self.best_fit_cosmological_parameters = best_fit_parameters.x[0]
-        self.best_fit_nuisance_parameters = best_fit_parameters.x[1:]
+            method = 'lm')
+
+        # generate list of paraemters for each kind of parameter in teh correct order
+        for i,name in enumerate(self._cosmology_parameter_names):
+            self.best_fit_cosmological_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+        for i,name in enumerate(self._nuisance_parameter_names):
+            self.best_fit_nuisance_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+        for i,name in enumerate(self._systematics_parameter_names):
+            self.best_fit_systematics_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+
+        # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
 
     def elaborate_systematics(self):

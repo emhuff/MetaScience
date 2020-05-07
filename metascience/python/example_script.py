@@ -1,6 +1,7 @@
 import matplotlib.pyplot as pyplot
 import experiment
 import interpret
+import prior
 #import consensus
 import matplotlib.pyplot as plt
 import numpy as np
@@ -78,11 +79,17 @@ interpreter_systematics_parameters = {}
 interpreter_systematics_parameters['function']  = 'hankel'
 interpreter_systematics_parameters['coeff'] = np.zeros(2)
 
+
+# We will also need a prior in order to interpret the results.
+# Mean of the prior:
+
+
 myPendulumIntepreter = interpret.SimplePendulumExperimentInterpreter(experiment = myPendulum,
                                     cosmology_parameters = interpreter_cosmology_parameters,
                                     nuisance_parameters = interpreter_nuisance_parameters,
+                                    systematics_parameters = interpreter_systematics_parameters,
                                     noise_parameters = interpreter_noise_parameters,
-                                    systematics_parameters = interpreter_systematics_parameters )
+                                    prior = prior)
 
 myPendulumIntepreter.fit_model()
 print("cosmological parameters, best fit:")
