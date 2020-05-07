@@ -48,6 +48,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                  cosmology_parameters = None,
                  nuisance_parameters = None,
                  noise_parameters = None,
+                 priors = None,
                  systematics_parameters = None ):
 
         '''
@@ -69,6 +70,9 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_cosmological_parameters = cosmology_parameters
         self.best_fit_nuisance_parameters = nuisance_parameters
         self.fit_status = None
+
+    def _generate_initial_guess(self):
+        pass
 
     def _check_inputs(experiment, cosmology_parameters, nuisance_parameters,
         noise_parameters, systematics_parameters):
