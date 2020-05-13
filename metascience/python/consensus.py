@@ -62,15 +62,17 @@ class SeminarConsensus(Consensus):
 
 class AlwaysBetOnMeConsensus(Consensus):
     '''
-    This consensus module only really makes sense  for > 2 interpeters, otherwise it reduces to the same as the NeverBetOnThemConsensus
+    Define tension with respect to 0th interpretation, which never updates
+    their model if there is a tension and all others do. Opposite of
+    NeverBetOnThemConsensus if there are only 2 interpreters.
     '''
     def __init__(self, interpretations):
         super().__init__()
         self.interpretations = interpretations
-        self.systematics_judgement = [False]*len(interpretations)
-        self.cosmology_judgement = [False]*len(interpretations) # is this what we want?
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = [False]*len(interpretations) # is this what we want?
         self.number_of_interpreters = len(interpretations)
-        self.tension
+        self.is_tension
         self.tm
 
 
@@ -83,22 +85,22 @@ class AlwaysBetOnMeConsensus(Consensus):
         self.tm[0] = 0 #tension metric between others and the 0th interpreter.
 
         # for each experiment get tension with the "chosen one."
-        for this_interp in self.interpratations[1:]:
+        for this_interp in self.interpretations[1:]:
 
             # difference between parameters inferred
-            diff_vec = interpretations[0].best_fit_cosmological_parameters -
-                interpretations[i].best_fit_cosmological_parameters
+            diff_vec = self.interpretations[0].best_fit_cosmological_parameters -
+                self.interpretations[i].best_fit_cosmological_parameters
 
             # combination of covariance of parameters inferred
-            joint_sum_cov = (interpretations[0].best_fit_cosmological_parameter_covariance +
-                interpretations[i].best_fit_cosmological_parameter_covariance)
+            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance +
+                self.interpretations[i].best_fit_cosmological_parameter_covariance)
 
             # chisq difference in matrix form
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.inv(joint_sum_cov)), diff_vec)
         pass
 
         if any(self.tm) > 1:
-            self.tension=True
+            self.is_tension=True
 
     def render_judgment(self):
         # Measure the tension among the provided interpretation objects
@@ -109,24 +111,34 @@ class AlwaysBetOnMeConsensus(Consensus):
         # instruct both other interpreters to change systematics model
         # cosmology model remains fixed
 
-        if self.tension == True:
-            interpretations[0].systematics_judgement= 'you are cool'
+        if self.is_tension == True:
+            self.systematics_judgment[0] = 'you are cool' # or False?
             for i in range(self.number_of_interpreters-1):
-                interpretations[i+1].systematics_judgement= 'you suck'
+                self.systematics_judgment[i+1] = 'you suck' # or True?
         pass
 
 class NeverBetOnThemConsensus(Consensus):
     '''
-    This consensus module only really makes sense  for > 2 interpeters, otherwise it reduces to the same as the AlwaysBetOnMeConsensus
+    Define tension with respect to 0th interpretation, which always updates
+    its systematics model if there is a tension, and the others never do.
+    Opposite of AlwaysBetOnMeConsensus if there are only 2 interpreters.
     '''
     def __init__(self, interprations):
         super().__init__()
+        self.interpretations = interpretations
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = [False]*len(interpretations) # is this what we want?
+        self.number_of_interpreters = len(interpretations)
+        self.is_tension
+        self.tm
 
     def tension_metric(self):
         '''
         Count the maximum number of 'sigma'
          among the projected **cosmological** parameter contours
         '''
+
+        # Can this pick a "default" metric, e.g. the chisq in AlwaysBetOnMeConsensus?
 
         pass
 
@@ -138,6 +150,12 @@ class NeverBetOnThemConsensus(Consensus):
         # only 1 interpreter changes their systematics model.
         # instruct both other interpreters to stay fixed
         # cosmology model remains fixed
+
+        if self.is_tension == True:
+            self.systematics_judgment[0] = 'you suck' # or True?
+            for i in range(self.number_of_interpreters-1):
+                self.systematics_judgment[i+1] = 'you are cool' # or False?
+
         pass
 
 class EveryoneIsWrongConsensus(Consensus):
@@ -145,6 +163,12 @@ class EveryoneIsWrongConsensus(Consensus):
     '''
     def __init__(self, interprations):
         super().__init__()
+        self.interpretations = interpretations
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = [False]*len(interpretations) # is this what we want?
+        self.number_of_interpreters = len(interpretations)
+        self.is_tension
+        self.tm
 
     def tension_metric(self):
         '''
@@ -162,6 +186,10 @@ class EveryoneIsWrongConsensus(Consensus):
         # all interpeters change their systematics model.
         # cosmology model remains fixed
 
+        if self.is_tension == True:
+            for i in range(self.number_of_interpreters):
+                self.systematics_judgment[i] = 'you suck' # or True?
+
         pass
 
 class ShiftThatParadigmConsensus(Consensus):
@@ -169,6 +197,12 @@ class ShiftThatParadigmConsensus(Consensus):
     '''
     def __init__(self, interprations):
         super().__init__()
+        self.interpretations = interpretations
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = [False]*len(interpretations) # is this what we want?
+        self.number_of_interpreters = len(interpretations)
+        self.is_tension
+        self.tm
 
     def tension_metric(self):
         '''
@@ -184,6 +218,9 @@ class ShiftThatParadigmConsensus(Consensus):
         # see metric from above, decide if tension exists
         # all interpreters change their cosmologies
 
+        if self.is_tension == True:
+            for i in range(self.number_of_interpreters):
+                self.cosmology_judgment[i] = 'you suck' # or True?
 
         pass
 
