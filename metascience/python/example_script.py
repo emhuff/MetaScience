@@ -1,7 +1,7 @@
 import matplotlib.pyplot as pyplot
 import experiment
 import interpret
-import prior
+#import prior
 #import consensus
 import matplotlib.pyplot as plt
 import numpy as np
@@ -69,8 +69,8 @@ interpreter_cosmology_parameters['constant_g'] = 9.8
 
 interpreter_nuisance_parameters = {}
 interpreter_nuisance_parameters['constant_l'] = 1.0
+interpreter_nuisance_parameters['constant_phase'] = 0.0
 interpreter_nuisance_parameters['constant_theta_0'] =  0.0
-interpreter_nuisance_parameters['constant_theta_v0'] = 0.0
 
 interpreter_noise_parameters = {}
 interpreter_noise_parameters['noise_std_dev'] = 0.15
@@ -88,8 +88,7 @@ myPendulumIntepreter = interpret.SimplePendulumExperimentInterpreter(experiment 
                                     cosmology_parameters = interpreter_cosmology_parameters,
                                     nuisance_parameters = interpreter_nuisance_parameters,
                                     systematics_parameters = interpreter_systematics_parameters,
-                                    noise_parameters = interpreter_noise_parameters,
-                                    prior = prior)
+                                    noise_parameters = interpreter_noise_parameters)
 
 myPendulumIntepreter.fit_model()
 print("cosmological parameters, best fit:")
@@ -119,11 +118,13 @@ for number_of_experiments:
     # two ways to combine the outputs of the experiments
     Consensus = ConsensusClass([list of interpreters])
 
-    # two judgments based on the combined outputs of experiments
+    # judgments based on the combined outputs of experiments
     judgments = Consensus.render_judgment()
 
     for judge in zip(judgments):
         experiment.update_model(judge)
+
+    # there's one consensus approach
     consensus_parameters.append(Consensus.consensus_cosmological_parameters)
 
 
