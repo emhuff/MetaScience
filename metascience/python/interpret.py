@@ -76,6 +76,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         ## The below parameters are stored by name in the experiment module.
         self.best_fit_cosmological_parameters = cosmology_parameters
         self.best_fit_nuisance_parameters = nuisance_parameters
+        self.best_fit_systematics_parameters = systematics_parameters
         self.fit_status = None
 
         self._cosmology_parameter_names = self.cosmology_parameters.keys()
@@ -132,8 +133,6 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             is the covariance attached in the right way?
         '''
 
-
-
         # identify parameters by name to connect with functional form in th emodel
         constant_g = parameters[ self._parameter_names.index('constant_g') ]
         constant_l = parameters[ self._parameter_names.index('constant_l') ]
@@ -170,11 +169,14 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         # generate list of paraemters for each kind of parameter in teh correct order
         for i,name in enumerate(self._cosmology_parameter_names):
-            self.best_fit_cosmological_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+            self.best_fit_cosmological_parameters[name] =
+                best_fit_parameters.x[self._parameter_names.index(name)]
         for i,name in enumerate(self._nuisance_parameter_names):
-            self.best_fit_nuisance_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+            self.best_fit_nuisance_parameters[name] =
+                best_fit_parameters.x[self._parameter_names.index(name)]
         for i,name in enumerate(self._systematics_parameter_names):
-            self.best_fit_systematics_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
+            self.best_fit_systematics_parameters[name] =
+                best_fit_parameters.x[self._parameter_names.index(name)]
 
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success

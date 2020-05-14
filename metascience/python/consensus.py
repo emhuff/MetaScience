@@ -20,6 +20,14 @@ class Consensus(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
+    def _update_parameters(self):
+        '''
+        For this consensus, combine the results of the provided interpretation
+         modules to get a best estimate of the *cosmological* parameters.
+        '''
+        pass
+
+    @abstractmethod
     def render_judgment(self):
         '''
         Given the combination of tension and posteriors, choose to either:
@@ -29,11 +37,26 @@ class Consensus(metaclass=ABCMeta):
 
         Note: We may want to have this do more than just call the
         "update_systematics" method.
+
+        Call self._update_parameters()
         '''
         raise NotImplementedError()
 
+class SensibleDefaultsConsensus(Consensus):
+    def tension_metric(self):
+        '''
+        Define what you think the default tension metric should be
+        '''
+        pass
 
-class SeminarConsensus(Consensus):
+    def _update_parameters(self,judgments):
+        # Mutiply together the posterios of the experiments that are *not* being directed to update their sytematics modules.
+        # Store the resulting posterior in self.consensus_cosmological_parameters
+
+    def render_judgment(self):
+        pass
+
+class SeminarConsensus(SensibleDefaultsConsensus):
     '''
     '''
     def __init__(self, interprations = None):
@@ -152,9 +175,9 @@ class NeverBetOnThemConsensus(Consensus):
         # cosmology model remains fixed
 
         if self.is_tension == True:
-            self.systematics_judgment[0] = 'you suck' # or True?
+            self.systematics_judgment[0] = True
             for i in range(self.number_of_interpreters-1):
-                self.systematics_judgment[i+1] = 'you are cool' # or False?
+                self.systematics_judgment[i+1] = False
 
         pass
 
@@ -188,7 +211,7 @@ class EveryoneIsWrongConsensus(Consensus):
 
         if self.is_tension == True:
             for i in range(self.number_of_interpreters):
-                self.systematics_judgment[i] = 'you suck' # or True?
+                self.systematics_judgment[i] = True
 
         pass
 
@@ -220,7 +243,7 @@ class ShiftThatParadigmConsensus(Consensus):
 
         if self.is_tension == True:
             for i in range(self.number_of_interpreters):
-                self.cosmology_judgment[i] = 'you suck' # or True?
+                self.cosmology_judgment[i] = True
 
         pass
 

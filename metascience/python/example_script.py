@@ -98,3 +98,38 @@ print("nuisance parameters, best fit:")
 print(myPendulumIntepreter.best_fit_nuisance_parameters)
 
 #this_consensus = consensus.AlwaysBetOnMeConsensus(interprations = [myPendulumIntepreter,myOtherPendulumInterpreter, etcInterpreter])
+
+'''
+Pseudocode for how this all works in the end.
+1. Choose a set of true cosmological parameters.
+2. Make 2 or more different experiment classes (corresponding to different experiments -- e.g., supernovae+CMB)
+(2a. For pendulum - two different ways to get g? maybe that's JUST two similar experiments with slightly different nuiscance params (liks Lengths))
+3. Set the true nuisance and systematics parameters for each
+4. Make an interpretation object for each experiment, with **potentially different** values for all the parameters
+
+consensus_parameters = []
+
+for number_of_experiments:
+
+    for i in range(n_iterations):
+        for j in range(n_experiments):
+            Generate data for each experiment.
+            Fit the data from the experiment.
+
+    # two ways to combine the outputs of the experiments
+    Consensus = ConsensusClass([list of interpreters])
+
+    # two judgments based on the combined outputs of experiments
+    judgments = Consensus.render_judgment()
+
+    for judge in zip(judgments):
+        experiment.update_model(judge)
+    consensus_parameters.append(Consensus.consensus_cosmological_parameters)
+
+
+
+
+Do this again  but substitute in a different consensus
+for each consensus approach:
+    plot consensus_parameters - true_cosmological_parameters
+'''
