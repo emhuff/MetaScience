@@ -30,6 +30,9 @@ experimental_parameters = {}
 experimental_parameters['time_between_measurements'] = .01
 experimental_parameters['number_of_measurements'] = 500
 
+
+pars
+pars_experiment = []
 seed = 999
 
 
@@ -64,21 +67,14 @@ plt.show()
 # Now we want to try interpreting the results of the experiment.
 # once we've run myPendulum.generate_data()
 # Define a bunch of new parameters that will govern the experiment.
-interpreter_cosmology_parameters = {}
-interpreter_cosmology_parameters['constant_g'] = 9.8
-
-interpreter_nuisance_parameters = {}
-interpreter_nuisance_parameters['constant_l'] = 1.0
-interpreter_nuisance_parameters['constant_phase'] = 0.0
-interpreter_nuisance_parameters['constant_theta_0'] =  0.0
-
-interpreter_noise_parameters = {}
-interpreter_noise_parameters['noise_std_dev'] = 0.15
-
-interpreter_systematics_parameters = {}
-interpreter_systematics_parameters['function']  = 'hankel'
-interpreter_systematics_parameters['coeff'] = np.zeros(2)
-
+pars_interpreter_cosmology = Parameter(value=9.8, name='constant_g', lable='cosmology', description='gravitational constant')
+par_interpreter_constant_phase = Parameter(value=0.0, name='constant_phase', label='nuisance', description='phase angle of pendulum swing')
+par_interpreter_constant_theta_0 = Parameter(value=1.0, name='constant_theta_0', label='nuisance', description='offset angle of pendulum')
+par_interpreter_constant_l = Parameter(value=1.0, name='constant_l', label='nuisance', description='length of pendulum')
+par_interpreter_noise = Parameter(value=0.15, name='noise_std_dev', label='systematics', description='Standard deviation of the noise')
+par_interpreter_henkel = Parameter(value=np.zeros(2), name='henkel', description='Henkel Function coefficients')
+pars_interpreter = [par_interpreter_henkel, par_interpreter_noise, par_interpreter_constant_l,
+    par_interpreter_constant_theta_0, par_interpreter_constant_phase, par_interpreter_cosmology]
 
 # We will also need a prior in order to interpret the results.
 # Mean of the prior:

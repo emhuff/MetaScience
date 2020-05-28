@@ -52,7 +52,7 @@ class SensibleDefaultsConsensus(Consensus):
         '''
         self.tm[0] = 0 #tension metric between others and the 0th interpreter.
         # for each experiment get tension with the "chosen one."
-        for this_interp in self.interpretations[1:]:
+        for i, this_interp in enumerate(self.interpretations[1:]):
 
             # difference between parameters inferred
             diff_vec = self.interpretations[0].best_fit_cosmological_parameters -
@@ -65,16 +65,32 @@ class SensibleDefaultsConsensus(Consensus):
             # chisq difference in matrix form
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.inv(joint_sum_cov)), diff_vec)
 
-        if any(self.tm) > 1:
+         if any(self.tm) > 1:
             self.is_tension=True
-        pass
+
 
     def _update_parameters(self,judgments):
-        # Mutiply together the posterios of the experiments that are *not* being directed to update their sytematics modules.
-        # Store the resulting posterior in self.consensus_cosmological_parameters
+            '''
+            For this consensus, combine the results of the provided interpretation
+             modules to get a best estimate of the *cosmological* parameters.
+            '''
+            chi2vec =self.interprations[i].chi2 for i in range(self.number_of_interpreters)]
+            ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0]
+
+            self.consensus_cosmological_parameters = interpretations[ind].best_fit_cosmological_parameters
+            self.consensus_parameter_covariance = interpretations[ind].best_fit_cosmological_parameter_covariance
 
     def render_judgment(self):
-        pass
+
+        if self.is_tension:
+            for i, this_interp in enumerate(self.interpretations):
+
+                if this_interp.chi2 > 3: # this is a totally arbitrary choice of number for now
+                    self.systematics_judgment[i] = True
+
+            if all(self.interpretations.chi2) < 3:
+                [self.cosmology_judgment[i] = True for i in range(self.number_of_interpreters)]
+
 
 class SeminarConsensus(SensibleDefaultsConsensus):
     '''

@@ -48,9 +48,7 @@ class ExperimentInterpreter(metaclass=ABCMeta):
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
                  experiment = None,
-                 cosmology_parameters = None,
-                 nuisance_parameters = None,
-                 systematics_parameters = None,
+                 parameters = None,
                  noise_parameters = None,
                  prior = None
                  ):
@@ -63,7 +61,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             ... times: input data
             ...
             inputs:
-                parameters are all dictionaries
+                parameters is a list of Parameter objects.
                 experiment: object
                 prior: object
 
@@ -77,17 +75,22 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             + noise_parameters['noise_std_dev']**2)
         self.times = experiment.times
         ## The below parameters are stored by name in the experiment module.
-        self.best_fit_cosmological_parameters = cosmology_parameters
-        self.best_fit_nuisance_parameters = nuisance_parameters
-        self.best_fit_systematics_parameters = systematics_parameters
         self.fit_status = None
+        self._unpack_parameters(parameters)
 
-        self._cosmology_parameter_names = [*(self.best_fit_cosmological_parameters.keys())]
-        self._nuisance_parameter_names = [*(self.best_fit_nuisance_parameters.keys())]
-        self._systematics_parameter_names = [*(self.best_fit_systematics_parameters.keys())]
-        self._parameter_names = [*(self._cosmology_parameter_names),
-            *(self._nuisance_parameter_names),
-            *(self._systematics_parameter_names)]
+    def _unpack_parameters(self,parameters):
+
+        self.best_fit_cosmological_parameters = []
+        self.best_fit_nuisance_parameters = []
+        self.best_fit_systematics_parameters = []
+        for param in parameters:
+            if 'cosmology' in param.label:
+                self.best_fit_cosmological_parameters.append(param)
+            if 'nuisance' in param.label:
+                self.best_fit_nuisance_parameters.append(param)
+            if 'systematic' in param.label:
+                self.best_fit_systematics_parameters.append(param)
+
 
     def _generate_guess(self):
         c_guess = [self.best_fit_cosmological_parameters[key] for key in self._cosmology_parameter_names]
@@ -144,11 +147,14 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                 is the covariance attached in the right way?
             '''
 
-            # identify parameters by name to connect with functional form in th emodel
-            constant_g = parameters[ self._parameter_names.index('constant_g') ]
-            constant_l = parameters[ self._parameter_names.index('constant_l') ]
-            constant_theta_0 = parameters[ self._parameter_names.index('constant_theta_0') ]
-            constant_phase = parameters[ self._parameter_names.index('constant_phase') ]
+            # identify parameters by name to connect with functional form in the model
+            names = [par.name for par in parameters]
+
+
+            constant_g = parameters[ names.index('constant_g') ].value
+            constant_l = parameters[ names.index('constant_l') ].value
+            constant_theta_0 = parameters[ names.index('constant_theta_0')].value
+            constant_phase = parameters[ names.index('constant_phase') ].value
 
             # define model for data with parameters above
             model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
@@ -161,7 +167,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             delta = model_with_systematics - self.measured_data_vector
 
             # calcualte chisq
-            chisq = np.dot(delta,delta) / self.covariance
+            chisq = np.dot(delta, delta / self.covariance)
 
             return chisq
 
@@ -173,7 +179,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,
             method = 'lm')
 
+        chi2 = fit_model.evaluate_logL(best_fit_parameters)/len(self.measured_data_vector) # save the best-fit chi2
+
         # generate list of paraemters for each kind of parameter in teh correct order
+        # ..todo: make this consistent with new parameters definition.
         for i,name in enumerate(self._cosmology_parameter_names):
             self.best_fit_cosmological_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]
         for i,name in enumerate(self._nuisance_parameter_names):
