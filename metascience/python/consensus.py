@@ -55,12 +55,10 @@ class SensibleDefaultsConsensus(Consensus):
         for i, this_interp in enumerate(self.interpretations[1:]):
 
             # difference between parameters inferred
-            diff_vec = self.interpretations[0].best_fit_cosmological_parameters -
-                self.interpretations[i].best_fit_cosmological_parameters
+            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - self.interpretations[i].best_fit_cosmological_parameters
 
             # combination of covariance of parameters inferred
-            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance +
-                self.interpretations[i].best_fit_cosmological_parameter_covariance)
+            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + self.interpretations[i].best_fit_cosmological_parameter_covariance)
 
             # chisq difference in matrix form
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.inv(joint_sum_cov)), diff_vec)
