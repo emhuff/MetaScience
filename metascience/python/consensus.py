@@ -72,7 +72,7 @@ class SensibleDefaultsConsensus(Consensus):
             For this consensus, combine the results of the provided interpretation
              modules to get a best estimate of the *cosmological* parameters.
             '''
-            chi2vec =self.interprations[i].chi2 for i in range(self.number_of_interpreters)]
+            chi2vec = [self.interprations[i].chi2 for i in range(self.number_of_interpreters)]
             ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0]
 
             self.consensus_cosmological_parameters = interpretations[ind].best_fit_cosmological_parameters
