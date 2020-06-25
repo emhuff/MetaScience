@@ -63,7 +63,7 @@ class SensibleDefaultsConsensus(Consensus):
             # chisq difference in matrix form
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.inv(joint_sum_cov)), diff_vec)
 
-         if any(self.tm) > 1:
+        if any(self.tm) > 1:
             self.is_tension=True
 
 
