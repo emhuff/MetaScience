@@ -45,6 +45,26 @@ class ExperimentInterpreter(metaclass=ABCMeta):
         '''
         pass
 
+
+class CargoCultExperimentInterpreter(ExperimentInterpreter):
+    def __init__(self,
+                 experiment = None,
+                 parameters = None,
+                 noise_parameters = None,
+                 prior = None
+                 ):
+         if parameters is None:
+             n_parameters = 2
+             parameters = np.zeros(n_parameters)
+         else:
+             n_parameters = len(parameters)
+
+         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
+         self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
+         self.chi2 = n_parameters
+
+
+
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
                  experiment = None,
