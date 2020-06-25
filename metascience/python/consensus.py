@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import numpy as np
 
 class Consensus(metaclass=ABCMeta):
     def __init__(self, interpretations = None):
@@ -10,7 +11,7 @@ class Consensus(metaclass=ABCMeta):
         '''
         pass
 
-    @abstractmethhod
+    @abstractmethod
     def tension_metric(self):
         '''
         Should be able to take a combination of parameter posteriors, decide if
@@ -46,6 +47,18 @@ class Consensus(metaclass=ABCMeta):
 
 class SensibleDefaultsConsensus(Consensus):
 
+
+    def __init__(self, interpretations = None):
+        super().__init__(interpretations = None )
+        self.interpretations = interpretations
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = [False]*len(interpretations)
+        self.number_of_interpreters = len(interpretations)
+        self.is_tension = False
+        self.tm = np.zeros(len(interpretations))
+
+
+
     def tension_metric(self):
         '''
         Define what you think the default tension metric should be
@@ -55,15 +68,13 @@ class SensibleDefaultsConsensus(Consensus):
         for i, this_interp in enumerate(self.interpretations[1:]):
 
             # difference between parameters inferred
-            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - self.interpretations[i].best_fit_cosmological_parameters
-
+            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
             # combination of covariance of parameters inferred
-            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + self.interpretations[i].best_fit_cosmological_parameter_covariance)
+            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
 
             # chisq difference in matrix form
-            self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.inv(joint_sum_cov)), diff_vec)
-
-        if any(self.tm) > 1:
+            self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
+        if np.sum(self.tm > 1.) > 0:
             self.is_tension=True
 
 
@@ -79,15 +90,21 @@ class SensibleDefaultsConsensus(Consensus):
             self.consensus_parameter_covariance = interpretations[ind].best_fit_cosmological_parameter_covariance
 
     def render_judgment(self):
-
+        '''
+        If there is a tension and the reduced chi2 values are high, update systematics.
+        If there is a tension and they are low, change the cosmology model.
+        '''
         if self.is_tension:
-            for i, this_interp in enumerate(self.interpretations):
 
+            for i, this_interp in enumerate(self.interpretations):
                 if this_interp.chi2 > 3: # this is a totally arbitrary choice of number for now
                     self.systematics_judgment[i] = True
 
-            if all(self.interpretations.chi2) < 3:
-                [self.cosmology_judgment[i] = True for i in range(self.number_of_interpreters)]
+            chi2_list = np.array([thing.chi2 for thing in self.interpretations])
+            if all(chi2_list < 3):
+                for i in range(self.number_of_interpreters):
+                    self.cosmology_judgment[i] = True
+
 
 
 class SeminarConsensus(SensibleDefaultsConsensus):
@@ -128,7 +145,7 @@ class AlwaysBetOnMeConsensus(SensibleDefaultsConsensus):
         self.cosmology_judgment = [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
-        self.tm
+        self.tm = np.zeros(len(interpretations))
 
 
     def render_judgment(self):
@@ -170,7 +187,7 @@ class NeverBetOnThemConsensus(SensibleDefaultsConsensus):
         self.cosmology_judgment = [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
-        self.tm
+        self.tm = np.zeros(len(interpretations))
 
 
     def render_judgment(self):
@@ -210,7 +227,7 @@ class EveryoneIsWrongConsensus(SensibleDefaultsConsensus):
         self.cosmology_judgment = [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
-        self.tm
+        self.tm = np.zeros(len(interpretations))
 
 
 
@@ -248,7 +265,8 @@ class ShiftThatParadigmConsensus(SensibleDefaultsConsensus):
         self.cosmology_judgment = [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
-        self.tm
+        self.tm = np.zeros(len(interpretations))
+
 
     def render_judgment(self):
         # Measure the tension among the provided interpretation objects

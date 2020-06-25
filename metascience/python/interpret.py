@@ -53,16 +53,45 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
                  noise_parameters = None,
                  prior = None
                  ):
+         super().__init__()
          if parameters is None:
              n_parameters = 2
              parameters = np.zeros(n_parameters)
+             self.best_fit_cosmological_parameters = np.zeros(n_parameters)
          else:
              n_parameters = len(parameters)
+             self.best_fit_cosmological_parameters = parameters
 
-         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
+
          self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
          self.chi2 = n_parameters
 
+
+    def fit_model():
+        '''
+        Fit a model. Generate a posterior.
+        '''
+        pass
+
+
+    def _add_systematics():
+        pass
+
+    def elaborate_systematics():
+        '''
+        Fit a model. Generate a posterior.
+        '''
+        pass
+
+
+    def _check_inputs():
+        '''
+        check that the interpreter has the inputs that are appropriate for then
+        experiment
+        check that the data vector from the experiment module match interpret
+        assert?
+        '''
+        pass
 
 
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
@@ -150,6 +179,9 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             raise NotImplementedError
 
         return new_data_vector
+
+    def _generate_model_data_vector(self,some_parameters):
+        pass
 
     def fit_model(self):
         '''
