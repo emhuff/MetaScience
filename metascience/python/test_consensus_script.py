@@ -3,6 +3,8 @@ import interpret
 import numpy as np
 
 
+cosmologies = [list_of_distinct_cosmologies -- LCDM, wCDM, mNu, etc]
+
 interpreter_A = interpret.CargoCultExperimentInterpreter(parameters = np.zeros(2)+0.)
 interpreter_A.chi2 = 1.
 interpreter_B = interpret.CargoCultExperimentInterpreter(parameters = np.zeros(2)+1.)
@@ -23,10 +25,5 @@ print(sensible.systematics_judgment)
 
 '''
 How should we update the cosmology?
-One option:
-'''
-def new_ideal_data_vector(parameters):
-    pass
 
-for each interpreter:
-    interpreter.generate_ideal_data_vector = new_ideal_data_vector
+'''
