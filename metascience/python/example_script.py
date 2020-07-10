@@ -102,6 +102,11 @@ Pseudocode for how this all works in the end.
 3. Set the true nuisance and systematics parameters for each
 4. Make an interpretation object for each experiment, with **potentially different** values for all the parameters
 
+cosmology_list = [StraightLineCosmology,CosineCosmology,TrueCosmology]
+complexity_order = [cosmo.complexity for cosmo in cosmology_list]
+# pick cosmology class by complexity:
+cosmology_list[where(complexity_order == 2)]
+
 consensus_parameters = []
 
 for number_of_experiments:
@@ -118,7 +123,7 @@ for number_of_experiments:
     judgments = Consensus.render_judgment()
 
     for judge in zip(judgments):
-        experiment.update_model(judge)
+        experiment.update_model(judge) # or interpret.update_model(judge) ??
 
     # there's one consensus approach
     consensus_parameters.append(Consensus.consensus_cosmological_parameters)

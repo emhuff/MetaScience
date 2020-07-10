@@ -2,6 +2,8 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import scipy
 
+#import cosmology ???
+
 class ExperimentInterpreter(metaclass=ABCMeta):
     def __init__(self):
         self.kind = None
@@ -41,7 +43,7 @@ class ExperimentInterpreter(metaclass=ABCMeta):
         check that the interpreter has the inputs that are appropriate for then
         experiment
         check that the data vector from the experiment module match interpret
-        assert?
+        assert?id
         '''
         pass
 
@@ -51,21 +53,16 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
                  experiment = None,
                  parameters = None,
                  noise_parameters = None,
-                 prior = None
+                 prior = None,
+                 cosmology = None
                  ):
-         super().__init__()
-         if parameters is None:
-             n_parameters = 2
-             parameters = np.zeros(n_parameters)
-             self.best_fit_cosmological_parameters = np.zeros(n_parameters)
-         else:
-             n_parameters = len(parameters)
-             self.best_fit_cosmological_parameters = parameters
 
+        super().__init__()
 
-         self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
-         self.chi2 = n_parameters
-
+        self.best_fit_cosmological_parameters = cosmology.best_fit_cosmological_parameters
+        self.best_fit_cosmological_parameter_covariance = cosmology.best_fit_cosmological_parameter_covariance
+        self.chi2 = cosmology.chi2
+        cosmology.generate_model_data_vector
 
     def fit_model():
         '''
@@ -99,7 +96,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                  experiment = None,
                  parameters = None,
                  noise_parameters = None,
-                 prior = None
+                 prior = None,
+                 cosmology = None,
                  ):
 
         '''
@@ -180,8 +178,9 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         return new_data_vector
 
-    def _generate_model_data_vector(self,some_parameters):
-        pass
+#pseudocode...
+#    def generate_model_data_vector(self,cosmology,some_parameters):
+#        pass
 
     def fit_model(self):
         '''
@@ -209,6 +208,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             constant_phase = parameters[ names.index('constant_phase') ].value
 
             # define model for data with parameters above
+#            model_data_vector = cosmology.generate_model_data_vector()  ?????
+
             model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
                 constant_l) * self.times + constant_phase)
 
