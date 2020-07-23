@@ -59,20 +59,23 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
 
         super().__init__()
 
-        self.best_fit_cosmological_parameters = cosmology.best_fit_cosmological_parameters
-        self.best_fit_cosmological_parameter_covariance = cosmology.best_fit_cosmological_parameter_covariance
-
+        self.best_fit_cosmological_parameters = cosmology.best_fit_parameters
+        self.best_fit_cosmological_parameter_covariance = np.eye(cosmology.n_parameters)
         self.chi2 = 0.
-        cosmology.generate_model_data_vector
-
+        self.times = experiment.times
 
     def fit_model():
         '''
         Fit a model. Generate a posterior.
         '''
         parameters = cosmology.get_parameter_set()
-        model_data_vector = cosmology.generate_model_data_vector(parameters)
-        best_fit_parameters = np.zeros(cosmology.n_parameters)
+
+        model_data_vector = cosmology.generate_model_data_vector(self.times,parameters[:cosmology.n_parameters])
+        # add systematics to the model
+        model_with_systematics = self._add_systematics(model_data_vector,pars = parameters[cosmology.n_parameters:])
+
+        best_fit_parameters = cosmology.best_fit_parameters
+
         return best_fit_parameters
 
     def _add_systematics():
@@ -98,7 +101,7 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
 class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
                  experiment = None,
-                 parameters = None,
+                 systematics_parameters = None,
                  noise_parameters = None,
                  prior = None,
                  cosmology = None,
@@ -127,6 +130,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.times = experiment.times
         ## The below parameters are stored by name in the experiment module.
         self.fit_status = None
+        self.systematics_parameters = systematics_parameters
         self._unpack_parameters(parameters)
 
     def _unpack_parameters(self,parameters):
@@ -166,11 +170,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         #assert(cosmology_)
 
 
-    def _add_systematics(self,a_data_vector):
+    def _add_systematics(self,data_vector, parameters = None):
         '''
         Adding terms in the Hankel basis functions to approximate systematics
         Adding systematics here that don't match the input systematics, becuase
         ... we don't know what they are!
+        '''
         '''
         if self.best_fit_systematics_parameters['function'] == 'hankel':
             order_of_function = len(self.best_fit_systematics_parameters['coeff'])
@@ -179,12 +184,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             new_data_vector = a_data_vector + added_systematics_vector
         else:
             raise NotImplementedError
-
-        return new_data_vector
-
-#pseudocode...
-#    def generate_model_data_vector(self,cosmology,some_parameters):
-#        pass
+        '''
+        order_of_function = len(parameters)
+        added_systematics_vector = scipy.special.hankel1(order_of_function,data_vector)
+        return new_data_vector + added_systematics_vector
 
     def fit_model(self):
         '''
@@ -201,25 +204,9 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                 is the syntax right for something dotted with itself?
                 is the covariance attached in the right way?
             '''
-
-            # identify parameters by name to connect with functional form in the model
-            '''
-            names = [par.name for par in parameters]
-
-
-            constant_g = parameters[ names.index('constant_g') ].value
-            constant_l = parameters[ names.index('constant_l') ].value
-            constant_theta_0 = parameters[ names.index('constant_theta_0')].value
-            constant_phase = parameters[ names.index('constant_phase') ].value
-            '''
-            # define model for data with parameters above
-#            model_data_vector = cosmology.generate_model_data_vector()  ?????
-
-            #model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
-            #    constant_l) * self.times + constant_phase)
-            model_data_vector = cosmology.generate_model_data_vector(parameters)
+            model_data_vector = cosmology.generate_model_data_vector(parameters[:cosmology.n_parameters])
             # add systematics to the model
-            model_with_systematics = self._add_systematics(model_data_vector)
+            model_with_systematics = self._add_systematics(model_data_vector,parameters = parameters[cosmology.n_parameters:])
 
             # calculate difference between model and data
             delta = model_with_systematics - self.measured_data_vector
@@ -231,7 +218,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
 
         # generate a guess in the right order.
-        guess = self._generate_guess()
+        guess = np.concatenate([cosmology.best_fit_parameters,self.systematics_parameters])
 
         # fit for parameters
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess,

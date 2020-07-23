@@ -4,6 +4,8 @@ import numpy as np
 class Cosmology(metaclass = ABCMeta):
     def __init__(self,complexity):
         self.n_parameters = False
+        self.n_cosmological = False
+        self.n_nuisance = False
         pass
 
     @abstractmethod
@@ -19,72 +21,67 @@ class Cosmology(metaclass = ABCMeta):
 class CargoCultCosmology(Cosmology):
     def __init__(self,complexity):
         self.complexity = 0
-        self.n_parameters = 2
-        self.best_fit_cosmological_parameters = np.zeros(n_parameters)
-        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
+        self.n_cosmological = 2
+        self.n_nuisance = 0
+        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)
 
     def get_parameter_set(self):
-         parameters = np.zeros(self.n_parameters)
+         parameters = np.zeros(self.n_cosmological)
          return parameters
 
 
-    def generate_model_data_vector(self,parameters):
-        self.best_fit_cosmological_parameters = get_parameter_set()
-        self.best_fit_cosmological_parameter_covariance = np.eye(self.n_parameters)
+    def generate_model_data_vector(self,times,parameters):
+#        parameters = get_parameter_set()
+        model_data_vector = parameters[0]*np.ones(len(self.times))**2 + parameters[1]
 
-        
-
-        model_data_vector = self.best_fit_cosmological_parameters[0]\
-        *np.ones(len(self.times))**2 + self.best_fit_cosmological_parameters[1]
+        return model_data_vector
 
 class CargoCultCosmology_Ones(Cosmology):
     def __init__(self,complexity):
         self.complexity = 0
-        self.best_fit_cosmological_parameters = np.zeros(n_parameters)
-        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
+        self.n_cosmological = 2
+        self.n_nuisance
+        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+1.0
+#        self.best_fit_cosmological_parameters = np.zeros(self.n_parameters)
+#        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
 #        self.chi2 = 0.
 
     def get_parameter_set(self):
-         n_parameters = 2
-         parameters = np.zeros(n_parameters)+1.0
-         self.best_fit_cosmological_parameters = np.zeros(n_parameters)+1.0
+         parameters = np.zeros(self.n_cosmological)+1.0
 
-    def generate_model_data_vector(self):
-        self.best_fit_cosmological_parameters = get_parameter_set()
-#        self.chi2 = n_parameters
-        self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
+         return parameters
 
-        model_data_vector = self.best_fit_cosmological_parameters[0]\
-        *np.ones(len(self.times)) + self.best_fit_cosmological_parameters[1]
+    def generate_model_data_vector(self,times,parameters):
+#        self.best_fit_cosmological_parameters = get_parameter_set()
+        model_data_vector = parameters[0]*np.ones(len(self.times)) + parameters[1]
+
+        return model_data_vector
 
 
 class CargoCultCosmology_Tens(Cosmology):
     def __init__(self,complexity):
         self.complexity = 0
-        self.best_fit_cosmological_parameters = np.zeros(n_parameters)
-        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
-#        self.chi2 = 0.
+        self.n_cosmological = 2
+        self.n_nuisance = 0
+        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+10.0
 
     def get_parameter_set(self):
-         n_parameters = 2
-         parameters = np.zeros(n_parameters)+10.0
-         self.best_fit_cosmological_parameters = np.zeros(n_parameters)+10.0
+         parameters = np.zeros(self.n_cosmological)+10.0
 
-    def generate_model_data_vector(self):
-        self.best_fit_cosmological_parameters = get_parameter_set()
-#        self.chi2 = n_parameters
-        self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
+         return parameters
 
-        model_data_vector = self.best_fit_cosmological_parameters[0]\
-        *np.ones(len(self.times)) + self.best_fit_cosmological_parameters[1]**2
+    def generate_model_data_vector(self,times,parameters):
+#        self.best_fit_cosmological_parameters = get_parameter_set()
+        model_data_vector = parameters[0]*np.ones(len(self.times)) + parameters[1]**2
 
+        return model_data_vector
 
 class StraightLineCosmology(Cosmology):
     def __init__(self,complexity):
         self.complexity = 0
         pass
 
-    def generate_model_data_vector(self,):
+    def generate_model_data_vector(self,times,parameters):
         model_data_vector = constant_theta_0 *\
         (constant_g/constant_l) * self.times + constant_phase
 
@@ -117,45 +114,53 @@ class CosineCosmology(Cosmology):
 
 
 class TrueCosmology(Cosmology):
+    def __init__(self,complexity):
+        self.n_cosmological = 2
+        self.n_nuisance = 6
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
+
+    def get_parameter_set(self):
+        return np.zeros(self.n_parameters)
 
 # copied from experiment.py
-        def _get_ideal_data_vector(self):
+    def generate_model_data_vector(self, times, parameters = parameters):
+        '''
+        Generate ideal data vector from cosmology parameters, nuisance
+        parameters, and experimental parameters
+        '''
+        g = parameters[0]
+        l = parameters[1]
+
+        c = parameters[2]
+        A = parameters[3]
+        wd = parameters[4]
+        phid = parameters[5]
+        theta_x0 = parameters[6]
+        theta_v0 = parameters[7]
+
+        #theta = self.constant_theta_0 *
+        #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
+
+        def forcing_function(t):
             '''
-            Generate ideal data vector from cosmology parameters, nuisance
-            parameters, and experimental parameters
+            output amplitude as a function of time
             '''
-            g = self.constant_g
-            l = self.constant_l
+            return A*np.cos(wd*t+phid)
 
-            c = self.systematics_parameters['drag_coeff']
-            A = self.systematics_parameters['driving_amp']
-            wd = self.systematics_parameters['driving_freq']
-            phid = self.systematics_parameters['driving_phase']
+        def oscillator_eqns(t,y):
+            '''
+            general equations of motion for an oscillator
+            '''
+            x = y[0]
+            u = y[1]
+            xp = u
+            up = (forcing_function(t) - c * u - l * x) / g
+            return np.array([xp,up])
 
-            self.times = np.arange(self.number_of_measurements) * self.time_between_measurements
-            #theta = self.constant_theta_0 *
-            #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
+        # minimum and maximum times over which the solution should be calculated
+        interval = (np.min(times),np.max(times))
 
-            def forcing_function(t):
-                '''
-                output amplitude as a function of time
-                '''
-                return A*np.cos(wd*t+phid)
-
-            def oscillator_eqns(t,y):
-                '''
-                general equations of motion for an oscillator
-                '''
-                x = y[0]
-                u = y[1]
-                xp = u
-                up = (forcing_function(t) - c * u - l * x) / g
-                return np.array([xp,up])
-
-            # minimum and maximum times over which the solution should be calculated
-            interval = (np.min(self.times),np.max(self.times))
-
-            # solving the oscillator equations of motion for the total interval
-            solution = solver(oscillator_eqns, interval, np.array([self.constant_theta_0, self.constant_theta_v0]), t_eval = self.times)
-            self.ideal_data_vector = solution.y[0]
-            return solution.y[0]
+        # solving the oscillator equations of motion for the total interval
+        solution = solver(oscillator_eqns, interval, np.array([parameters[-2],parameters[-1]]), t_eval = times)
+        self.ideal_data_vector = solution.y[0]
+        return solution.y[0]
