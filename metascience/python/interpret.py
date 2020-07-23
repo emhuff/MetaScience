@@ -61,15 +61,19 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
 
         self.best_fit_cosmological_parameters = cosmology.best_fit_cosmological_parameters
         self.best_fit_cosmological_parameter_covariance = cosmology.best_fit_cosmological_parameter_covariance
-        self.chi2 = cosmology.chi2
+
+        self.chi2 = 0.
         cosmology.generate_model_data_vector
+
 
     def fit_model():
         '''
         Fit a model. Generate a posterior.
         '''
-        pass
-
+        parameters = cosmology.get_parameter_set()
+        model_data_vector = cosmology.generate_model_data_vector(parameters)
+        best_fit_parameters = np.zeros(cosmology.n_parameters)
+        return best_fit_parameters
 
     def _add_systematics():
         pass
@@ -83,7 +87,7 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
 
     def _check_inputs():
         '''
-        check that the interpreter has the inputs that are appropriate for then
+        check that the interpreter has the inputs that are appropriate for the
         experiment
         check that the data vector from the experiment module match interpret
         assert?
@@ -199,6 +203,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             '''
 
             # identify parameters by name to connect with functional form in the model
+            '''
             names = [par.name for par in parameters]
 
 
@@ -206,13 +211,13 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             constant_l = parameters[ names.index('constant_l') ].value
             constant_theta_0 = parameters[ names.index('constant_theta_0')].value
             constant_phase = parameters[ names.index('constant_phase') ].value
-
+            '''
             # define model for data with parameters above
 #            model_data_vector = cosmology.generate_model_data_vector()  ?????
 
-            model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
-                constant_l) * self.times + constant_phase)
-
+            #model_data_vector = constant_theta_0 * np.cos(np.sqrt(constant_g /
+            #    constant_l) * self.times + constant_phase)
+            model_data_vector = cosmology.generate_model_data_vector(parameters)
             # add systematics to the model
             model_with_systematics = self._add_systematics(model_data_vector)
 
@@ -234,7 +239,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         chi2 = fit_model.evaluate_logL(best_fit_parameters)/len(self.measured_data_vector) # save the best-fit chi2
 
-        # generate list of paraemters for each kind of parameter in teh correct order
+        # generate list of paraemters for each kind of parameter in the correct order
         # ..todo: make this consistent with new parameters definition.
         for i,name in enumerate(self._cosmology_parameter_names):
             self.best_fit_cosmological_parameters[name] = best_fit_parameters.x[self._parameter_names.index(name)]

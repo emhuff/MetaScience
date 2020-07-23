@@ -3,6 +3,7 @@ import numpy as np
 
 class Cosmology(metaclass = ABCMeta):
     def __init__(self,complexity):
+        self.n_parameters = False
         pass
 
     @abstractmethod
@@ -18,19 +19,20 @@ class Cosmology(metaclass = ABCMeta):
 class CargoCultCosmology(Cosmology):
     def __init__(self,complexity):
         self.complexity = 0
+        self.n_parameters = 2
         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
         self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
-        self.chi2 = 0.
 
     def get_parameter_set(self):
-         n_parameters = 2
-         parameters = np.zeros(n_parameters)
-         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
+         parameters = np.zeros(self.n_parameters)
+         return parameters
 
-    def generate_model_data_vector(self):
+
+    def generate_model_data_vector(self,parameters):
         self.best_fit_cosmological_parameters = get_parameter_set()
-        self.chi2 = n_parameters
-        self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
+        self.best_fit_cosmological_parameter_covariance = np.eye(self.n_parameters)
+
+        
 
         model_data_vector = self.best_fit_cosmological_parameters[0]\
         *np.ones(len(self.times))**2 + self.best_fit_cosmological_parameters[1]
@@ -40,7 +42,7 @@ class CargoCultCosmology_Ones(Cosmology):
         self.complexity = 0
         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
         self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
-        self.chi2 = 0.
+#        self.chi2 = 0.
 
     def get_parameter_set(self):
          n_parameters = 2
@@ -49,7 +51,7 @@ class CargoCultCosmology_Ones(Cosmology):
 
     def generate_model_data_vector(self):
         self.best_fit_cosmological_parameters = get_parameter_set()
-        self.chi2 = n_parameters
+#        self.chi2 = n_parameters
         self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
 
         model_data_vector = self.best_fit_cosmological_parameters[0]\
@@ -61,7 +63,7 @@ class CargoCultCosmology_Tens(Cosmology):
         self.complexity = 0
         self.best_fit_cosmological_parameters = np.zeros(n_parameters)
         self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
-        self.chi2 = 0.
+#        self.chi2 = 0.
 
     def get_parameter_set(self):
          n_parameters = 2
@@ -70,7 +72,7 @@ class CargoCultCosmology_Tens(Cosmology):
 
     def generate_model_data_vector(self):
         self.best_fit_cosmological_parameters = get_parameter_set()
-        self.chi2 = n_parameters
+#        self.chi2 = n_parameters
         self.best_fit_cosmological_parameter_covariance = np.eye(n_parameters)
 
         model_data_vector = self.best_fit_cosmological_parameters[0]\
