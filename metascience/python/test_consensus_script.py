@@ -17,35 +17,40 @@ Issues right now
 '''
 
 
-cosmologies = [CargoCultCosmology,CargoCultCosmology_Ones, CargoCultCosmology_Tens]
+cosmologies = [cosmology.CargoCultCosmology(),cosmology.CargoCultCosmology_Ones(), cosmology.CargoCultCosmology_Tens()]
+systematics_parameters = [np.arange(2),np.arange(1),np.arange(3)]
 #[StraightLineCosmology,CosineCosmology,TrueCosmology]
 
 index = 0
+interpreters = []
 
-interpreters[0] = interpret.CargoCultExperimentInterpreter(cosmology = cosmologies[index])
+interpreters.append(interpret.CargoCultExperimentInterpreter(parameters = np.zeros(2),systematics_parameters = systematics_parameters[0],cosmology = cosmologies[index]))
 interpreters[0].chi2 = 1.
-interpreters[1] = interpret.CargoCultExperimentInterpreter(cosmology = cosmologies[index])
+interpreters.append(interpret.CargoCultExperimentInterpreter(parameters = np.ones(2),cosmology = cosmologies[index],systematics_parameters = systematics_parameters[1]))
 interpreters[1].chi2 = 1.
-interpreters[2] = interpret.CargoCultExperimentInterpreter(cosmology = cosmologies[index])
+interpreters.append(interpret.CargoCultExperimentInterpreter(parameters = np.ones(2)+10.,cosmology = cosmologies[index],systematics_parameters = systematics_parameters[2]))
 interpreters[2].chi2 = 4.
 
 print(interpreters[0].best_fit_cosmological_parameters)
 
 sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
 sensible.tension_metric()
-print(sensible.tm)
-print(sensible.is_tension)
+print('tension metric = ',sensible.tm)
+print('is there tension? ',sensible.is_tension)
 
 sensible.render_judgment()
-print(sensible.cosmology_judgment)
-print(sensible.systematics_judgment)
+print('cosmology judgments = ',sensible.cosmology_judgment)
+print('systematics judgments = ',sensible.systematics_judgment)
 
 
-for i,judgment in enumerate(sensible.cosmology_judgment):
-    if judgment == True:
-        cosmology[i]=cosmologies[index+1]
-        interpreters[i] = interpret.CargoCultExperimentInterpreter(cosmology = cosmologies[i])
-
+if np.sum(sensible.cosmology_judgment)> 0:
+    index = index+1
+if np.sum(sensible.systematics_judgement) > 0:
+    for i,this_judgment in enumerate(sensible.systematics_judgment):
+        if this_judgment:
+            new_systematics = np.concatenate(systematics_parameters[i],np.zeros(1))
+            systematics_parameters = new_systematics
+            interpreters[i] = interpret.CargoCultExperimentInterpreter(parameters = np.zeros(2),systematics_parameters = new_systematics_parameters,cosmology = cosmologies[index])
 
 
 '''

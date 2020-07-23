@@ -97,11 +97,11 @@ class SensibleDefaultsConsensus(Consensus):
         if self.is_tension:
 
             for i, this_interp in enumerate(self.interpretations):
-                if this_interp.chi2 > 3: # this is a totally arbitrary choice of number for now
+                if this_interp.chi2 > 500: # this is a totally arbitrary choice of number for now
                     self.systematics_judgment[i] = True
 
             chi2_list = np.array([thing.chi2 for thing in self.interpretations])
-            if all(chi2_list < 3):
+            if all(chi2_list < 500):
                 for i in range(self.number_of_interpreters):
                     self.cosmology_judgment[i] = True
 

@@ -19,10 +19,11 @@ class Cosmology(metaclass = ABCMeta):
 
 
 class CargoCultCosmology(Cosmology):
-    def __init__(self,complexity):
+    def __init__(self):
         self.complexity = 0
         self.n_cosmological = 2
         self.n_nuisance = 0
+        self.n_parameters =  self.n_nuisance + self.n_cosmological        
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)
 
     def get_parameter_set(self):
@@ -32,15 +33,16 @@ class CargoCultCosmology(Cosmology):
 
     def generate_model_data_vector(self,times,parameters):
 #        parameters = get_parameter_set()
-        model_data_vector = parameters[0]*np.ones(len(self.times))**2 + parameters[1]
+        model_data_vector = parameters[0]*np.ones(len(times))**2 + parameters[1]
 
         return model_data_vector
 
 class CargoCultCosmology_Ones(Cosmology):
-    def __init__(self,complexity):
+    def __init__(self):
         self.complexity = 0
         self.n_cosmological = 2
-        self.n_nuisance
+        self.n_nuisance = 0
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+1.0
 #        self.best_fit_cosmological_parameters = np.zeros(self.n_parameters)
 #        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
@@ -53,16 +55,17 @@ class CargoCultCosmology_Ones(Cosmology):
 
     def generate_model_data_vector(self,times,parameters):
 #        self.best_fit_cosmological_parameters = get_parameter_set()
-        model_data_vector = parameters[0]*np.ones(len(self.times)) + parameters[1]
+        model_data_vector = parameters[0]*np.ones(len(times)) + parameters[1]
 
         return model_data_vector
 
 
 class CargoCultCosmology_Tens(Cosmology):
-    def __init__(self,complexity):
+    def __init__(self):
         self.complexity = 0
         self.n_cosmological = 2
         self.n_nuisance = 0
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+10.0
 
     def get_parameter_set(self):
@@ -72,7 +75,7 @@ class CargoCultCosmology_Tens(Cosmology):
 
     def generate_model_data_vector(self,times,parameters):
 #        self.best_fit_cosmological_parameters = get_parameter_set()
-        model_data_vector = parameters[0]*np.ones(len(self.times)) + parameters[1]**2
+        model_data_vector = parameters[0]*np.ones(len(times)) + parameters[1]**2
 
         return model_data_vector
 
@@ -123,7 +126,7 @@ class TrueCosmology(Cosmology):
         return np.zeros(self.n_parameters)
 
 # copied from experiment.py
-    def generate_model_data_vector(self, times, parameters = parameters):
+    def generate_model_data_vector(self, times, parameters = None):
         '''
         Generate ideal data vector from cosmology parameters, nuisance
         parameters, and experimental parameters

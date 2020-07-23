@@ -52,6 +52,7 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
     def __init__(self,
                  experiment = None,
                  parameters = None,
+                 systematics_parameters = None,
                  noise_parameters = None,
                  prior = None,
                  cosmology = None
@@ -59,10 +60,10 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
 
         super().__init__()
 
-        self.best_fit_cosmological_parameters = cosmology.best_fit_parameters
+        self.best_fit_cosmological_parameters = parameters
         self.best_fit_cosmological_parameter_covariance = np.eye(cosmology.n_parameters)
         self.chi2 = 0.
-        self.times = experiment.times
+        self.times = np.arange(10)
 
     def fit_model():
         '''
@@ -74,7 +75,7 @@ class CargoCultExperimentInterpreter(ExperimentInterpreter):
         # add systematics to the model
         model_with_systematics = self._add_systematics(model_data_vector,pars = parameters[cosmology.n_parameters:])
 
-        best_fit_parameters = cosmology.best_fit_parameters
+        best_fit_parameters = self.best_fit_cosmological_parameters# cosmology.best_fit_parameters
 
         return best_fit_parameters
 
