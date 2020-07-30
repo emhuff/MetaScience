@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
+from scipy.integrate import solve_ivp as solver
 
 class Cosmology(metaclass = ABCMeta):
     def __init__(self,complexity):
@@ -23,8 +24,10 @@ class CargoCultCosmology(Cosmology):
         self.complexity = 0
         self.n_cosmological = 2
         self.n_nuisance = 0
-        self.n_parameters =  self.n_nuisance + self.n_cosmological        
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)
+        self.best_fit_nuisance_parameters = np.zeros(self.n_cosmological)
+
 
     def get_parameter_set(self):
          parameters = np.zeros(self.n_cosmological)
@@ -44,6 +47,7 @@ class CargoCultCosmology_Ones(Cosmology):
         self.n_nuisance = 0
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+1.0
+        self.best_fit_nuisance_parameters = np.zeros(self.n_nuisance)
 #        self.best_fit_cosmological_parameters = np.zeros(self.n_parameters)
 #        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
 #        self.chi2 = 0.
@@ -67,6 +71,7 @@ class CargoCultCosmology_Tens(Cosmology):
         self.n_nuisance = 0
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+10.0
+        self.best_fit_nuisance_parameters = np.zeros(self.n_nuisance)
 
     def get_parameter_set(self):
          parameters = np.zeros(self.n_cosmological)+10.0
@@ -80,7 +85,7 @@ class CargoCultCosmology_Tens(Cosmology):
         return model_data_vector
 
 class StraightLineCosmology(Cosmology):
-    def __init__(self,complexity):
+    def __init__(self):
         self.complexity = 0
         pass
 
@@ -98,32 +103,43 @@ class StraightLineCosmology(Cosmology):
 
 
 class CosineCosmology(Cosmology):
-    def __init__(self,complexity):
-        pass
-
-    def generate_model_data_vector(self,):
-        # define model for data with parameters above
-        model_data_vector = constant_theta_0 \
-        * np.cos(np.sqrt(constant_g /constant_l) * self.times + constant_phase)
-
+    def __init__(self):
+        self.complexity = 1
+        self.n_cosmological = 2
+        self.n_nuisance = 2
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
+        self.best_fit_cosmological_parameters = np.array([9.8,1.0])
+        self.best_fit_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
 
     def get_parameter_set(self):
-        names = [par.name for par in parameters]
+        parameters = np.concatenate([self.best_fit_cosmological_parameters,self.best_fit_nuisance_parameters])
+        return parameters
 
-        constant_g = parameters[ names.index('constant_g') ].value
-        constant_l = parameters[ names.index('constant_l') ].value
-        constant_theta_0 = parameters[ names.index('constant_theta_0')].value
-        constant_phase = parameters[ names.index('constant_phase') ].value
+    def generate_model_data_vector(self,times, parameters = None):
+        # define model for data with parameters above
+
+        constant_g = parameters[0]
+        constant_l = parameters[1]
+        constant_theta_0 = parameters[2]
+        constant_phase = parameters[3]
+
+        model_data_vector = constant_theta_0 \
+        * np.cos(np.sqrt(constant_g /constant_l) * times + constant_phase)
+        return model_data_vector
+
 
 
 class TrueCosmology(Cosmology):
-    def __init__(self,complexity):
+    def __init__(self):
         self.n_cosmological = 2
         self.n_nuisance = 6
         self.n_parameters =  self.n_nuisance + self.n_cosmological
+        self.best_fit_cosmological_parameters = np.array([9.8,1.0])
+        self.best_fit_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])
 
     def get_parameter_set(self):
-        return np.zeros(self.n_parameters)
+        parameters = np.concatenate([self.best_fit_cosmological_parameters,self.best_fit_nuisance_parameters])
+        return parameters
 
 # copied from experiment.py
     def generate_model_data_vector(self, times, parameters = None):
@@ -157,7 +173,7 @@ class TrueCosmology(Cosmology):
             x = y[0]
             u = y[1]
             xp = u
-            up = (forcing_function(t) - c * u - l * x) / g
+            up = (forcing_function(t) - c * u - g * x / l)
             return np.array([xp,up])
 
         # minimum and maximum times over which the solution should be calculated

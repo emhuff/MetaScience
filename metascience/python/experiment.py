@@ -5,6 +5,8 @@ from scipy.integrate import solve_ivp as solver
 class Experiment(metaclass=ABCMeta):
     def __init__(self):
         self.kind = None
+        self.ideal_data_vector = None
+        self.observed_data_vector = None
         pass
 
     @abstractmethod
@@ -26,7 +28,7 @@ class Experiment(metaclass=ABCMeta):
         '''
         self._get_ideal_data_vector()
         self._add_noise()
-        self.data_vector = self._add_systematics()
+        self._add_systematics()
 
 
 class CMBExperiment(Experiment):
@@ -56,22 +58,25 @@ class SimplePendulumExperiment(Experiment):
                     cosmology_parameters = None,
                     nuisance_parameters = None,
                     experimental_parameters = None,
+                    cosmology = None,
                     noise_parameters = None,
                     systematics_parameters = None,
                     seed=999):
         super().__init__()
         self.kind = 'pendulum'
-        self.constant_g = cosmology_parameters['constant_g']
-        self.constant_l = nuisance_parameters['constant_l']
-        self.constant_theta_0 = nuisance_parameters['constant_theta_0']
-        self.constant_theta_v0 = nuisance_parameters['constant_theta_v0']
-        self.time_between_measurements = experimental_parameters['time_between_measurements']
-        self.number_of_measurements = experimental_parameters['number_of_measurements']
-        self.times = None
-        self.noise_std_dev = noise_parameters['noise_std_dev']
-        self.boost_deriv = systematics_parameters['boost_deriv'] # what's a boost deriv?
-        self.seed = np.random.seed(seed=seed)
+        self.parameters = np.concatenate([cosmology_parameters,nuisance_parameters])
+        # check that this is consistent with what the cosmology needs.
+        assert cosmology.n_cosmological == cosmology_parameters.size
+        assert cosmology.n_nuisance == nuisance_parameters.size
+        self.cosmology = cosmology
+        self.times = experimental_parameters['times']
         self.systematics_parameters = systematics_parameters
+        self.noise_parameters = noise_parameters
+
+
+
+        self.seed = np.random.seed(seed=seed)
+
         #"cosmology" params: g
         #"astrophysical (nuisance)"  params: l
 
@@ -80,41 +85,17 @@ class SimplePendulumExperiment(Experiment):
         Generate ideal data vector from cosmology parameters, nuisance
         parameters, and experimental parameters
         '''
-        g = self.constant_g
-        l = self.constant_l
+        self.ideal_data_vector = self.cosmology.generate_model_data_vector(self.times,self.parameters)
+        self.observed_data_vector = self.ideal_data_vector
 
-        c = self.systematics_parameters['drag_coeff']
-        A = self.systematics_parameters['driving_amp']
-        wd = self.systematics_parameters['driving_freq']
-        phid = self.systematics_parameters['driving_phase']
+    def _add_noise(self):
+        '''
+        Add noise from noise parrrrrameters and measurements
+        '''
+        noise_std_dev = self.noise_parameters[0]
+        noise_vector = noise_std_dev * np.random.randn(self.times.size)
+        self.observed_data_vector = self.observed_data_vector + noise_vector
 
-        self.times = np.arange(self.number_of_measurements) * self.time_between_measurements
-        #theta = self.constant_theta_0 *
-        #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
-
-        def forcing_function(t):
-            '''
-            output amplitude as a function of time
-            '''
-            return A*np.cos(wd*t+phid)
-
-        def oscillator_eqns(t,y):
-            '''
-            general equations of motion for an oscillator
-            '''
-            x = y[0]
-            u = y[1]
-            xp = u
-            up = (forcing_function(t) - c * u - l * x) / g
-            return np.array([xp,up])
-
-        # minimum and maximum times over which the solution should be calculated
-        interval = (np.min(self.times),np.max(self.times))
-
-        # solving the oscillator equations of motion for the total interval
-        solution = solver(oscillator_eqns, interval, np.array([self.constant_theta_0, self.constant_theta_v0]), t_eval = self.times)
-        self.ideal_data_vector = solution.y[0]
-        return solution.y[0]
 
     def _add_systematics(self):
         '''
@@ -123,14 +104,8 @@ class SimplePendulumExperiment(Experiment):
         adding a systematic error
 
         '''
+        boost_deriv = self.systematics_parameters[0]
         time_deriv = self.times - self.times[::-1] # compute the time deriv vector
-        data_deriv = self.data_vector - self.data_vector[::-1] #compute the data deriv vector
-        systematics_vector = self.boost_deriv * (data_deriv / time_deriv) # multiply the ratio of ddata/dtime by boost factor
-        return self.data_vector + systematics_vector # add systematics to data vector
-
-    def _add_noise(self):
-        '''
-        Add noise from noise parrameters and measurements
-        '''
-        noise_vector = self.noise_std_dev * np.random.randn(self.number_of_measurements)
-        self.data_vector = self.ideal_data_vector + noise_vector
+        data_deriv = self.ideal_data_vector - self.ideal_data_vector[::-1] #compute the data deriv vector
+        systematics_vector = boost_deriv * (data_deriv / time_deriv) # multiply the ratio of ddata/dtime by boost factor
+        self.observed_data_vector = self.observed_data_vector + systematics_vector
