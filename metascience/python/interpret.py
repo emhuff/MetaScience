@@ -143,9 +143,18 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         else:
             raise NotImplementedError
         '''
-        order_of_function = len(parameters)
-        added_systematics_vector = scipy.special.hankel1(order_of_function,data_vector)
-        return data_vector + added_systematics_vector
+        added_systematics_vector = np.zeros_like(self.times)
+        for nu,coeff in enumerate(parameters):
+            thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
+            if np.sum(~np.isfinite(thissys)) > 0:
+                if nu == 0:
+                    thissys[~np.isfinite(thissys)] = coeff
+                else:
+                    thissys[~np.isfinite(thissys)] = 0.
+            data_vector = data_vector + thissys.real
+
+        #added_systematics_vector = scipy.special.hankel1(order_of_function,self.times)
+        return data_vector
 
     def fit_model(self):
         '''
@@ -154,7 +163,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             maybe we need an explicit jacobian because the model has cosine in it?
         '''
 
-        def evaluate_logL(parameters):
+        def evaluate_logL(parameters,return_chisq = False):
             '''
             What can we infer about the world from the provided experiment?
             Takes a cosmology, returns a log-posterior or similar.
@@ -172,8 +181,11 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             # calcualte chisq
 
             chisq = np.dot(delta.T, np.dot(self.inverse_covariance,delta))
-
-            return chisq
+            chi = np.dot(self.inverse_covariance,delta)
+            if return_chisq:
+                return chisq
+            else:
+                return chi
 
 
         # generate a guess in the right order.
@@ -182,13 +194,18 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         # fit for parameters
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm')
 
-        chi2 = fit_model.evaluate_logL(best_fit_parameters)/len(self.measured_data_vector) # save the best-fit chi2
-
+        self.chi2 = evaluate_logL(best_fit_parameters.x,return_chisq=True)/len(self.measured_data_vector) # save the best-fit chi2
+        # This is what the interpreter thinks the data would look like without systematics, based on its best fit
+        self.best_fit_ideal_model = self.cosmology.generate_model_data_vector(self.times,best_fit_parameters.x[:self.cosmology.n_parameters])
+        # This is what the interpreter's best-fit model thinks the data should look like, with systematics.
+        self.best_fit_observed_model = self._add_systematics(self.best_fit_ideal_model,parameters = best_fit_parameters.x[self.cosmology.n_parameters:])
         # generate list of paraemters for each kind of parameter in the correct order
         # ..todo: make this consistent with new parameters definition.
         self.best_fit_cosmological_parameters = best_fit_parameters.x[:self.cosmology.n_cosmological]
         self.best_fit_nuisance_parameters = best_fit_parameters.x[self.cosmology.n_cosmological:self.cosmology.n_parameters]
         self.best_fit_systematics_parameters = best_fit_parameters.x[self.cosmology.n_parameters:]
+
+
 
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
