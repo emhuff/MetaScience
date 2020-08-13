@@ -189,7 +189,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
 
         # generate a guess in the right order.
-        guess = np.concatenate([self.cosmology.best_fit_cosmological_parameters,self.cosmology.best_fit_nuisance_parameters,self.starting_systematics_parameters])
+        guess = np.concatenate([self.cosmology.fiducial_cosmological_parameters,self.cosmology.fiducial_nuisance_parameters,self.starting_systematics_parameters])
 
         # fit for parameters
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm')

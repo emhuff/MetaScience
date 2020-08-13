@@ -25,8 +25,8 @@ class CargoCultCosmology(Cosmology):
         self.n_cosmological = 2
         self.n_nuisance = 0
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)
-        self.best_fit_nuisance_parameters = np.zeros(self.n_cosmological)
+        self.fiducial_cosmological_parameters = np.zeros(self.n_cosmological)
+        self.fiducial_nuisance_parameters = np.zeros(self.n_cosmological)
 
 
     def get_parameter_set(self):
@@ -46,8 +46,8 @@ class CargoCultCosmology_Ones(Cosmology):
         self.n_cosmological = 2
         self.n_nuisance = 0
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+1.0
-        self.best_fit_nuisance_parameters = np.zeros(self.n_nuisance)
+        self.fiducial_cosmological_parameters = np.zeros(self.n_cosmological)+1.0
+        self.fiducial_nuisance_parameters = np.zeros(self.n_nuisance)
 #        self.best_fit_cosmological_parameters = np.zeros(self.n_parameters)
 #        self.best_fit_cosmological_parameter_covariance=np.eye(n_parameters)
 #        self.chi2 = 0.
@@ -70,8 +70,8 @@ class CargoCultCosmology_Tens(Cosmology):
         self.n_cosmological = 2
         self.n_nuisance = 0
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.best_fit_cosmological_parameters = np.zeros(self.n_cosmological)+10.0
-        self.best_fit_nuisance_parameters = np.zeros(self.n_nuisance)
+        self.fiducial_cosmological_parameters = np.zeros(self.n_cosmological)+10.0
+        self.fiducial_nuisance_parameters = np.zeros(self.n_nuisance)
 
     def get_parameter_set(self):
          parameters = np.zeros(self.n_cosmological)+10.0
@@ -87,19 +87,23 @@ class CargoCultCosmology_Tens(Cosmology):
 class StraightLineCosmology(Cosmology):
     def __init__(self):
         self.complexity = 0
-        pass
-
-    def generate_model_data_vector(self,times,parameters):
-        model_data_vector = constant_theta_0 *\
-        (constant_g/constant_l) * self.times + constant_phase
+        self.n_cosmological = 1
+        self.n_nuisance = 1
+        self.n_parameters = self.n_cosmological + self.n_nuisance
+        self.fiducial_cosmological_parameters = np.array([1.])
+        self.fiducial_nuisance_parameters = np.array([0.])
 
     def get_parameter_set(self):
-        names = [par.name for par in parameters]
+        parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
+        return parameters
 
-        constant_g = parameters[ names.index('constant_g') ].value
-        constant_l = parameters[ names.index('constant_l') ].value
-        constant_theta_0 = parameters[ names.index('constant_theta_0')].value
-        constant_phase = parameters[ names.index('constant_phase') ].value
+    def generate_model_data_vector(self,times,parameters):
+        slope = parameters[0]
+        intercept = parameters[1]
+
+        # for now assuming a straight line with the intercept the nuisance parameter that isn't the cosmology
+        model_data_vector =slope*times + intercept
+        return model_data_vector
 
 
 class CosineCosmology(Cosmology):
@@ -108,11 +112,11 @@ class CosineCosmology(Cosmology):
         self.n_cosmological = 2
         self.n_nuisance = 2
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.best_fit_cosmological_parameters = np.array([9.8,1.0])
-        self.best_fit_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
+        self.fiducial_cosmological_parameters = np.array([9.8,1.0])
+        self.fiducial_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
 
     def get_parameter_set(self):
-        parameters = np.concatenate([self.best_fit_cosmological_parameters,self.best_fit_nuisance_parameters])
+        parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
         return parameters
 
     def generate_model_data_vector(self,times, parameters = None):
@@ -134,11 +138,11 @@ class TrueCosmology(Cosmology):
         self.n_cosmological = 2
         self.n_nuisance = 6
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.best_fit_cosmological_parameters = np.array([9.8,1.0])
-        self.best_fit_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])
+        self.fiducial_cosmological_parameters = np.array([9.8,1.0])
+        self.fiducial_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])
 
     def get_parameter_set(self):
-        parameters = np.concatenate([self.best_fit_cosmological_parameters,self.best_fit_nuisance_parameters])
+        parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
         return parameters
 
 # copied from experiment.py
