@@ -52,7 +52,7 @@ class SensibleDefaultsConsensus(Consensus):
         super().__init__(interpretations = None )
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False # [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
@@ -78,12 +78,12 @@ class SensibleDefaultsConsensus(Consensus):
             self.is_tension=True
 
 
-    def _update_parameters(self,judgments):
+    def _update_parameters(self):
             '''
             For this consensus, combine the results of the provided interpretation
              modules to get a best estimate of the *cosmological* parameters.
             '''
-            chi2vec = [self.interprations[i].chi2 for i in range(self.number_of_interpreters)]
+            chi2vec = [self.interpretations[i].chi2 for i in range(self.number_of_interpreters)]
             ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0]
 
             self.consensus_cosmological_parameters = interpretations[ind].best_fit_cosmological_parameters
@@ -96,15 +96,20 @@ class SensibleDefaultsConsensus(Consensus):
         '''
         if self.is_tension:
 
+            chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+#            this_interp.chi2*1./this_interp.measured_data_vector.size
+
             for i, this_interp in enumerate(self.interpretations):
-                if this_interp.chi2 > 500: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= 3: # this is a totally arbitrary choice of number for now
                     self.systematics_judgment[i] = True
 
-            chi2_list = np.array([thing.chi2 for thing in self.interpretations])
-            if all(chi2_list < 500):
-                for i in range(self.number_of_interpreters):
-                    self.cosmology_judgment[i] = True
+            if all(chi2_list < 3):
+                self.cosmology_judgment = True
 
+        self._update_parameters()
+                #for i in range(self.number_of_interpreters):
+                #    self.cosmology_judgment[i] = True
 
 
 class SeminarConsensus(SensibleDefaultsConsensus):
