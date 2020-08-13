@@ -194,7 +194,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         # fit for parameters
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm')
 
-        self.chi2 = evaluate_logL(best_fit_parameters.x,return_chisq=True)/len(self.measured_data_vector) # save the best-fit chi2
+        self.chi2 = evaluate_logL(best_fit_parameters.x,return_chisq=True)#/len(self.measured_data_vector) # save the best-fit chi2
         # This is what the interpreter thinks the data would look like without systematics, based on its best fit
         self.best_fit_ideal_model = self.cosmology.generate_model_data_vector(self.times,best_fit_parameters.x[:self.cosmology.n_parameters])
         # This is what the interpreter's best-fit model thinks the data should look like, with systematics.
@@ -206,7 +206,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_systematics_parameters = best_fit_parameters.x[self.cosmology.n_parameters:]
 
         # Find and store the best-fit parameter covariance.
-        self.best_fit_cosmological_parameter_covariance = best_fit_parameters.hess_inv
+        self.best_fit_cosmological_parameter_covariance = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
 
 
         # apply success flag from fit parameters to fit status

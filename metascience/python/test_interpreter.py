@@ -6,9 +6,9 @@ import cosmology
 import ipdb
 
 truth = cosmology.TrueCosmology()
-experimental_parameters = {'times':np.linspace(0,5,50)}
-noise_parameters = np.array([0.1])
-true_systematics_parameters = np.array([.1])
+experimental_parameters = {'times':np.linspace(0,5,500)}
+noise_parameters = np.array([0.01])
+true_systematics_parameters = np.array([.01])
 true_parameters = truth.get_parameter_set()
 true_parameters[4] = np.sqrt(12.)
 true_parameters[2] = 0.5

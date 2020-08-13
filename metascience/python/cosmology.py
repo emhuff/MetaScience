@@ -87,7 +87,7 @@ class CargoCultCosmology_Tens(Cosmology):
 class StraightLineCosmology(Cosmology):
     def __init__(self):
         self.complexity = 0
-        self.n_cosmological = 1
+        self.n_cosmological = 2
         self.n_nuisance = 1
         self.n_parameters = self.n_cosmological + self.n_nuisance
         self.fiducial_cosmological_parameters = np.array([1.])

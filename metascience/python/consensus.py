@@ -73,6 +73,7 @@ class SensibleDefaultsConsensus(Consensus):
             joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
 
             # chisq difference in matrix form
+
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
         if np.sum(self.tm > 1.) > 0:
             self.is_tension=True
@@ -84,10 +85,11 @@ class SensibleDefaultsConsensus(Consensus):
              modules to get a best estimate of the *cosmological* parameters.
             '''
             chi2vec = [self.interpretations[i].chi2 for i in range(self.number_of_interpreters)]
-            ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0]
+            #ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0][0]
+            ind = np.argmin(chi2vec)
 
-            self.consensus_cosmological_parameters = interpretations[ind].best_fit_cosmological_parameters
-            self.consensus_parameter_covariance = interpretations[ind].best_fit_cosmological_parameter_covariance
+            self.consensus_cosmological_parameters = self.interpretations[ind].best_fit_cosmological_parameters
+            self.consensus_parameter_covariance = self.interpretations[ind].best_fit_cosmological_parameter_covariance
 
     def render_judgment(self):
         '''
@@ -106,6 +108,7 @@ class SensibleDefaultsConsensus(Consensus):
 
             if all(chi2_list < 3):
                 self.cosmology_judgment = True
+
 
         self._update_parameters()
                 #for i in range(self.number_of_interpreters):
