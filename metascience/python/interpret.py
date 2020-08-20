@@ -206,8 +206,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_systematics_parameters = best_fit_parameters.x[self.cosmology.n_parameters:]
 
         # Find and store the best-fit parameter covariance.
-        self.best_fit_cosmological_parameter_covariance = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
-
+        self.best_fit_cosmological_parameter_covariance = 10*best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+# TO DO: Figure out exactly what cov_x is and if it is what we want
 
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success

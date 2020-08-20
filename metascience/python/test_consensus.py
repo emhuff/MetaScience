@@ -11,8 +11,8 @@ true_parameters = truth.get_parameter_set()
 true_parameters[3] = np.sqrt(12.)
 true_parameters[1] = 0.5
 # We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(0,2,500)}
-noise_parameters1 = np.array([0.01])
+experimental_parameters1 = {'times':np.linspace(0,5,500)}
+noise_parameters1 = np.array([0.03])
 true_systematics_parameters1 = np.array([.01])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                experimental_parameters=experimental_parameters1,
@@ -23,8 +23,8 @@ pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
 pendulum1.generate_data()
 
 
-experimental_parameters2 = {'times':np.linspace(0,10,50)}
-noise_parameters2 = np.array([0.01])
+experimental_parameters2 = {'times':np.linspace(0,10,500)}
+noise_parameters2 = np.array([0.03])
 true_systematics_parameters2 = np.array([.01])
 pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                experimental_parameters=experimental_parameters2,
@@ -42,7 +42,7 @@ n_experiments = 2
 experiments = [pendulum1,pendulum2]
 noise_parameters = [noise_parameters1,noise_parameters2]
 
-cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology()]#,cosmology.StraightLineCosmology()] # we will start with the last item first!
+cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology(),cosmology.StraightLineCosmology()] # we will start with the last item first!
 this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
@@ -58,7 +58,7 @@ for i in range(n_experiments):
 
 
 
-n_iter = 3
+n_iter = 50
 for iter in range(n_iter):
     print(f"------------------------------")
     print(f"Iteration {iter}:")
@@ -69,6 +69,17 @@ for iter in range(n_iter):
         print(f"best-fit parameter errors: {errors}")
         print(f"fit chi2: {interpreter.chi2}")
         print(f"fit chi2/dof: {interpreter.chi2/interpreter.measured_data_vector.size}")
+
+    # Plot the fits.
+    filename = f"pendulum_iter-{iter:03}.png"
+    fig,ax = plt.subplots(figsize=(7,7))
+    ax.plot(pendulum1.times,pendulum1.observed_data_vector,label='data 1')
+    ax.plot(interpreters[0].times,interpreters[0].best_fit_observed_model,label='model 1')
+    ax.plot(pendulum2.times,pendulum2.observed_data_vector,label='data 2')
+    ax.plot(interpreters[1].times,interpreters[1].best_fit_observed_model,label='model 2')
+    ax.legend(loc='best')
+    fig.savefig(filename)
+
     # Now pass the result to the consensus.
     sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
     sensible.tension_metric()
@@ -76,8 +87,9 @@ for iter in range(n_iter):
     print(f"tension: {sensible.is_tension}")
     sensible.render_judgment()
     if sensible.cosmology_judgment is True:
-        this_cosmology = cosmologies.pop()
         print(f"updating the cosmology!")
+        # TO DO: stop when there are no more cosmologies
+        this_cosmology = cosmologies.pop()
         for i,interpreter in enumerate(interpreters):
 
             interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
@@ -93,6 +105,8 @@ for iter in range(n_iter):
                     starting_systematics_parameters = systematics_parameters[i], noise_parameters = noise_parameters[i])
 
 
+
+#
 # Now the loop:
 #  1. Estimate parameters.
 #  2. Initialize a consensus using all interpreters
