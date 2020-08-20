@@ -45,7 +45,7 @@ this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
 starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
-
+systematics_parameters = list(n_experiments)
 
 for i in range(n_experiments):
 
