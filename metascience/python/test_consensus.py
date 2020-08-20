@@ -8,8 +8,8 @@ import consensus
 truth = cosmology.TrueCosmology()
 # These parameters are shared:
 true_parameters = truth.get_parameter_set()
-true_parameters[4] = np.sqrt(12.)
-true_parameters[2] = 0.5
+true_parameters[3] = np.sqrt(12.)
+true_parameters[1] = 0.5
 # We need two different experiments.
 experimental_parameters1 = {'times':np.linspace(0,5,500)}
 noise_parameters1 = np.array([0.01])
