@@ -11,7 +11,7 @@ true_parameters = truth.get_parameter_set()
 true_parameters[3] = np.sqrt(12.)
 true_parameters[1] = 0.5
 # We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(0,5,500)}
+experimental_parameters1 = {'times':np.linspace(0,2,500)}
 noise_parameters1 = np.array([0.01])
 true_systematics_parameters1 = np.array([.01])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
@@ -23,7 +23,7 @@ pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
 pendulum1.generate_data()
 
 
-experimental_parameters2 = {'times':np.linspace(0,5,500)}
+experimental_parameters2 = {'times':np.linspace(0,100,50)}
 noise_parameters2 = np.array([0.01])
 true_systematics_parameters2 = np.array([.01])
 pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
