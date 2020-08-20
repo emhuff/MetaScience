@@ -134,7 +134,7 @@ class CosineCosmology(Cosmology):
 
 class TrueCosmology(Cosmology):
     def __init__(self):
-        self.n_cosmological = 2
+        self.n_cosmological = 1
         self.n_nuisance = 6
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([9.8,1.0])
