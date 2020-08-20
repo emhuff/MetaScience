@@ -33,9 +33,11 @@ pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                systematics_parameters=true_systematics_parameters2,
                                                noise_parameters = noise_parameters2, seed = 111)
 pendulum2.generate_data()
+
 #plt.plot(pendulum1.times,pendulum1.observed_data_vector,label='1')
 #plt.plot(pendulum2.times,pendulum2.observed_data_vector,label='2')
 #plt.show()
+
 n_experiments = 2
 experiments = [pendulum1,pendulum2]
 noise_parameters = [noise_parameters1,noise_parameters2]
