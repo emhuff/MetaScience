@@ -68,6 +68,7 @@ for iter in range(n_iter):
         print(f"best-fit parameters: {interpreter.best_fit_cosmological_parameters}")
         print(f"best-fit parameter errors: {errors}")
         print(f"fit chi2: {interpreter.chi2}")
+        print(f"fit chi2/dof: {interpreter.chi2/interpreter.measured_data_vector.size}")
     # Now pass the result to the consensus.
     sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
     sensible.tension_metric()
