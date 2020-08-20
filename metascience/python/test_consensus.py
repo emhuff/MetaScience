@@ -32,7 +32,7 @@ pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                nuisance_parameters=true_parameters[truth.n_cosmological:],
                                                systematics_parameters=true_systematics_parameters2,
                                                noise_parameters = noise_parameters2, seed = 111)
-#pendulum2.generate_data()
+pendulum2.generate_data()
 #plt.plot(pendulum1.times,pendulum1.observed_data_vector,label='1')
 #plt.plot(pendulum2.times,pendulum2.observed_data_vector,label='2')
 #plt.show()
@@ -48,7 +48,7 @@ starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters
 systematics_parameters = starting_systematics_parameters
 
 for i in range(n_experiments):
-
+    print(noise_parameters[i], 'noise parameters for experiment ', i )
     interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment=experiments[i],
     cosmology=this_cosmology, starting_systematics_parameters=starting_systematics_parameters[i], noise_parameters=noise_parameters[i]))
 #interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment = pendulum1, cosmology=this_cosmology, starting_systematics_parameters = starting_systematics_parameters[0], noise_parameters = noise_parameters1))
