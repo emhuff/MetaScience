@@ -45,7 +45,7 @@ this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
 starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
-systematics_parameters = list(n_experiments)
+systematics_parameters = starting_systematics_parameters
 
 for i in range(n_experiments):
 
@@ -53,7 +53,7 @@ for i in range(n_experiments):
     cosmology=this_cosmology, starting_systematics_parameters=starting_systematics_parameters[i], noise_parameters=noise_parameters[i]))
 #interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment = pendulum1, cosmology=this_cosmology, starting_systematics_parameters = starting_systematics_parameters[0], noise_parameters = noise_parameters1))
 #interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment = pendulum2, cosmology=this_cosmology, starting_systematics_parameters = starting_systematics_parameters[1], noise_parameters = noise_parameters2))
-    systematics_parameters[i]=starting_systematics_parameters[i]
+
 
 
 n_iter = 3
