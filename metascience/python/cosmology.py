@@ -112,7 +112,7 @@ class CosineCosmology(Cosmology):
         self.n_cosmological = 1
         self.n_nuisance = 2
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([9.8,1.0])
+        self.fiducial_cosmological_parameters = np.array([1.0])
         self.fiducial_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
 
     def get_parameter_set(self):
@@ -137,7 +137,7 @@ class TrueCosmology(Cosmology):
         self.n_cosmological = 1
         self.n_nuisance = 6
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([9.8,1.0])
+        self.fiducial_cosmological_parameters = np.array([1.0])
         self.fiducial_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])
 
     def get_parameter_set(self):
