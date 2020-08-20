@@ -36,10 +36,10 @@ w_fit = pendulum_interp.best_fit_cosmological_parameters[0]
 print(f"best-fit cosmological parameters: {w_fit}")
 print(f"true cosmological parameters: {w_true}")
 
-plt.errorbar(pendulum.times,pendulum.observed_data_vector,np.zeros(pendulum.times.size)+noise_parameters,fmt='o',linestyle='None', label='data',)
-plt.plot(pendulum.times,pendulum_interp.best_fit_observed_model,label='fit')
-plt.plot(pendulum.times,pendulum_interp.best_fit_ideal_model,label='ideal fit')
-plt.plot(pendulum.times,pendulum.ideal_data_vector,'-.',label='true (ideal)')
+plt.errorbar(pendulum.times,pendulum.observed_data_vector,np.zeros(pendulum.times.size)+noise_parameters,fmt='o',linestyle='None', label='data',zorder=1)
+plt.plot(pendulum.times,pendulum_interp.best_fit_observed_model,label='fit',zorder=2)
+plt.plot(pendulum.times,pendulum_interp.best_fit_ideal_model,label='ideal fit',zorder=2)
+plt.plot(pendulum.times,pendulum.ideal_data_vector,'-.',label='true (ideal)',zorder=3)
 
 plt.legend(loc='best')
 plt.show()
