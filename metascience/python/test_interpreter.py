@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import experiment
 import interpret
 import cosmology
-import ipdb
 
 truth = cosmology.TrueCosmology()
 experimental_parameters = {'times':np.linspace(0,5,500)}
