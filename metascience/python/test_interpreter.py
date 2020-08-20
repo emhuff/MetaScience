@@ -44,5 +44,3 @@ plt.legend(loc='best')
 plt.show()
 
 # Show the systematics.
-
-ipdb.set_trace()
