@@ -23,7 +23,7 @@ pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
 pendulum1.generate_data()
 
 
-experimental_parameters2 = {'times':np.linspace(0,100,50)}
+experimental_parameters2 = {'times':np.linspace(0,10,50)}
 noise_parameters2 = np.array([0.01])
 true_systematics_parameters2 = np.array([.01])
 pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
