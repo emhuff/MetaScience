@@ -46,12 +46,14 @@ interpreters = []
 n_systematics_parameters = [1,1]
 starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
 
+
 for i in range(n_experiments):
+
     interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment=experiments[i],
     cosmology=this_cosmology, starting_systematics_parameters=starting_systematics_parameters[i], noise_parameters=noise_parameters[i]))
 #interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment = pendulum1, cosmology=this_cosmology, starting_systematics_parameters = starting_systematics_parameters[0], noise_parameters = noise_parameters1))
 #interpreters.append(interpret.SimplePendulumExperimentInterpreter(experiment = pendulum2, cosmology=this_cosmology, starting_systematics_parameters = starting_systematics_parameters[1], noise_parameters = noise_parameters2))
-
+    systematics_parameters[i]=starting_systematics_parameters[i]
 
 
 n_iter = 3
@@ -76,17 +78,16 @@ for iter in range(n_iter):
         for i,interpreter in enumerate(interpreters):
 
             interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
-            starting_systematics_parameters = starting_systematics_parameters, noise_parameters = noise_parameters[i])
+            starting_systematics_parameters = starting_systematics_parameters[i], noise_parameters = noise_parameters[i])
 # here we have some choice about whether to start from square 1 with systematics parameters (if not, could try interpreter.best_fit_systematics_parameters)
     else:
         if np.sum(sensible.systematics_judgment) > 0:
             for i,this_judgment in enumerate(sensible.systematics_judgment):
                 if this_judgment:
                     print(f"Adding systematic error sophistication to interpreter {i}.")
-                    new_systematics = np.concatenate(systematics_parameters[i],np.zeros(1))
-                    systematics_parameters = new_systematics
+                    systematics_parameters[i] = np.concatenate(systematics_parameters[i],np.zeros(1))
                     interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
-                    starting_systematics_parameters = new_systematics_parameters, noise_parameters = noise_parameters[i])
+                    starting_systematics_parameters = systematics_parameters[i], noise_parameters = noise_parameters[i])
 
 
 # Now the loop:
