@@ -10,8 +10,8 @@ experimental_parameters = {'times':np.linspace(0,5,500)}
 noise_parameters = np.array([0.01])
 true_systematics_parameters = np.array([.01])
 true_parameters = truth.get_parameter_set()
-true_parameters[4] = np.sqrt(12.)
-true_parameters[2] = 0.5
+true_parameters[3] = np.sqrt(12.)
+true_parameters[1] = 0.5
 pendulum = experiment.SimplePendulumExperiment(cosmology=truth,
                                                experimental_parameters=experimental_parameters,
                                                cosmology_parameters=true_parameters[:truth.n_cosmological],
@@ -31,8 +31,8 @@ pendulum_interp = interpret.SimplePendulumExperimentInterpreter(experiment = pen
                                                                  cosmology = model)
 pendulum_interp.fit_model()
 print(f"fit status: {pendulum_interp.fit_status}")
-w_true = np.sqrt(truth.fiducial_cosmological_parameters[0]/truth.fiducial_cosmological_parameters[1])
-w_fit = np.sqrt(pendulum_interp.best_fit_cosmological_parameters[0]/pendulum_interp.best_fit_cosmological_parameters[0])
+w_true = truth.fiducial_cosmological_parameters[0]
+w_fit = pendulum_interp.best_fit_cosmological_parameters[0]
 
 print(f"best-fit cosmological parameters: {w_fit}")
 print(f"true cosmological parameters: {w_true}")
