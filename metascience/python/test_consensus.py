@@ -87,7 +87,7 @@ for iter in range(n_iter):
             for i,this_judgment in enumerate(sensible.systematics_judgment):
                 if this_judgment:
                     print(f"Adding systematic error sophistication to interpreter {i}.")
-                    systematics_parameters[i] = np.concatenate(systematics_parameters[i],np.zeros(1))
+                    systematics_parameters[i] = np.concatenate((systematics_parameters[i],np.zeros(1)))
                     interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
                     starting_systematics_parameters = systematics_parameters[i], noise_parameters = noise_parameters[i])
 
