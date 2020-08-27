@@ -210,10 +210,13 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         # So our covmat needs to be rescaled by the residuals aka chi2
 
         # pcov(absolute_sigma=False) = pcov(absolute_sigma=True) * chisq(popt)/(M-N)
-        print(best_fit_parameters.cov_x, 'hi')
-        relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
-        absCovmat = relCovmat*(len(self.times)-self.cosmology.n_cosmological)/self.chi2
-        self.best_fit_cosmological_parameter_covariance = absCovmat
+        try:
+            relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+            absCovmat = relCovmat*(len(self.times)-self.cosmology.n_cosmological)/self.chi2
+            self.best_fit_cosmological_parameter_covariance = absCovmat
+        except:
+            self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
+
 
         #absCovmat
         # TO DO: figure out what to do when fitting fails
