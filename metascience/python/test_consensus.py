@@ -83,17 +83,23 @@ for iter in range(n_iter):
     # Now pass the result to the consensus.
     sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
     sensible.tension_metric()
-    print(f" value of the tension parameter: {sensible.tm}")
+    print(f"value of the tension parameter: {sensible.tm}")
     print(f"tension: {sensible.is_tension}")
     sensible.render_judgment()
+    if not sensible.is_tension:
+        print('No tension, yay!')
+        break
     if sensible.cosmology_judgment is True:
-        print(f"updating the cosmology!")
-        # TO DO: stop when there are no more cosmologies
+        print(f"Updating the cosmology")
+        if len(cosmologies) == 0:
+            print('Ran out of cosmologies to try!')
+            break
         this_cosmology = cosmologies.pop()
         for i,interpreter in enumerate(interpreters):
 
             interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
             starting_systematics_parameters = starting_systematics_parameters[i], noise_parameters = noise_parameters[i])
+
 # here we have some choice about whether to start from square 1 with systematics parameters (if not, could try interpreter.best_fit_systematics_parameters)
     else:
         if np.sum(sensible.systematics_judgment) > 0:
