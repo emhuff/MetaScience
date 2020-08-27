@@ -206,8 +206,15 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_systematics_parameters = best_fit_parameters.x[self.cosmology.n_parameters:]
 
         # Find and store the best-fit parameter covariance.
-        self.best_fit_cosmological_parameter_covariance = 10*best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
-# TO DO: Figure out exactly what cov_x is and if it is what we want
+        # Note that cov_x isn't the true parameter covariance, it is a relative covariance,
+        # So our covmat needs to be rescaled by the residuals aka chi2
+
+        # pcov(absolute_sigma=False) = pcov(absolute_sigma=True) * chisq(popt)/(M-N)
+
+        relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+        absCovmat = relCovmat*(len(self.times)-self.cosmology.n_cosmological)/self.chi2
+        self.best_fit_cosmological_parameter_covariance = absCovmat
+        # TO DO: figure out what to do when fitting fails
 
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
