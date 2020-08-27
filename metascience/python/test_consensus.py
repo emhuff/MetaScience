@@ -64,6 +64,7 @@ for iter in range(n_iter):
     print(f"Iteration {iter}:")
     for interpreter in interpreters:
         interpreter.fit_model()
+        print(np.diag(interpreter.best_fit_cosmological_parameter_covariance), 'yo')
         errors = np.sqrt(np.diag(interpreter.best_fit_cosmological_parameter_covariance))
         print(f"best-fit parameters: {interpreter.best_fit_cosmological_parameters}")
         print(f"best-fit parameter errors: {errors}")
