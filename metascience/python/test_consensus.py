@@ -42,7 +42,7 @@ n_experiments = 2
 experiments = [pendulum1,pendulum2]
 noise_parameters = [noise_parameters1,noise_parameters2]
 
-cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology(),cosmology.StraightLineCosmology()] # we will start with the last item first!
+cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology()] # we will start with the last item first!
 this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
