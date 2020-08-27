@@ -59,6 +59,8 @@ for i in range(n_experiments):
 
 
 n_iter = 15
+still_ok = True
+while still_ok:
 for iter in range(n_iter):
     print(f"------------------------------")
     print(f"Iteration {iter}:")
@@ -66,14 +68,18 @@ for iter in range(n_iter):
         interpreter.fit_model()
         if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance) < 0):
             print(f"the fit didn't proceed, your errors are {np.diag(interpreter.best_fit_cosmological_parameter_covariance)}- you should probably check your data, soldier")
+            still_ok =False
             break
         else:
             errors = np.sqrt(np.diag(interpreter.best_fit_cosmological_parameter_covariance))
+
 
         print(f"best-fit parameters: {interpreter.best_fit_cosmological_parameters}")
         print(f"best-fit parameter errors: {errors}")
         print(f"fit chi2: {interpreter.chi2}")
         print(f"fit chi2/dof: {interpreter.chi2/interpreter.measured_data_vector.size}")
+
+    if still_ok == False: break
 
     # Plot the fits.
     filename = f"pendulum_iter-{iter:03}.png"
