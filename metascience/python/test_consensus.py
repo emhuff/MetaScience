@@ -64,11 +64,12 @@ for iter in range(n_iter):
     print(f"Iteration {iter}:")
     for interpreter in interpreters:
         interpreter.fit_model()
-        try:
-            errors = np.sqrt(np.diag(interpreter.best_fit_cosmological_parameter_covariance))
-        except:
+        if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance)) < 0:
             print(f"the fit didn't proceed, your errors are {np.diag(interpreter.best_fit_cosmological_parameter_covariance)}- you should probably check your data, soldier")
             break
+        else:
+            errors = np.sqrt(np.diag(interpreter.best_fit_cosmological_parameter_covariance))
+
         print(f"best-fit parameters: {interpreter.best_fit_cosmological_parameters}")
         print(f"best-fit parameter errors: {errors}")
         print(f"fit chi2: {interpreter.chi2}")
