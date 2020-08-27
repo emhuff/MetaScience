@@ -64,7 +64,7 @@ for iter in range(n_iter):
     print(f"Iteration {iter}:")
     for interpreter in interpreters:
         interpreter.fit_model()
-        if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance)) < 0:
+        if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance) < 0):
             print(f"the fit didn't proceed, your errors are {np.diag(interpreter.best_fit_cosmological_parameter_covariance)}- you should probably check your data, soldier")
             break
         else:
