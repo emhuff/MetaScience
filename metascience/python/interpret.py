@@ -213,7 +213,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
         absCovmat = relCovmat*(len(self.times)-self.cosmology.n_cosmological)/self.chi2
-        self.best_fit_cosmological_parameter_covariance = absCovmat
+        self.best_fit_cosmological_parameter_covariance = relCovmat
+        #absCovmat
         # TO DO: figure out what to do when fitting fails
 
         # apply success flag from fit parameters to fit status
