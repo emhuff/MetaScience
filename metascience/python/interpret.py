@@ -216,10 +216,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             self.best_fit_cosmological_parameter_covariance = absCovmat
         except:
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
-
-
-        #absCovmat
-        # TO DO: figure out what to do when fitting fails
+            print('covariance is None: setting to -1')
 
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
