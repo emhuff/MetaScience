@@ -48,7 +48,7 @@ class Consensus(metaclass=ABCMeta):
 class SensibleDefaultsConsensus(Consensus):
 
 
-    def __init__(self, interpretations = None):
+    def __init__(self, interpretations = None, chi2_dof_threshold = 1.25):
         super().__init__(interpretations = None )
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
@@ -56,7 +56,7 @@ class SensibleDefaultsConsensus(Consensus):
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
-
+        self.chi2_dof_threshold = chi2_dof_threshold
 
 
     def tension_metric(self):
@@ -103,10 +103,10 @@ class SensibleDefaultsConsensus(Consensus):
 #            this_interp.chi2*1./this_interp.measured_data_vector.size
 
             for i, this_interp in enumerate(self.interpretations):
-                if chi2_list[i] >= 3: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
                     self.systematics_judgment[i] = True
 
-            if all(chi2_list < 3):
+            if all(chi2_list < self.chi2_dof_threshold):
                 self.cosmology_judgment = True
 
 
@@ -150,7 +150,7 @@ class AlwaysBetOnMeConsensus(SensibleDefaultsConsensus):
         super().__init__()
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False # [False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
@@ -192,7 +192,7 @@ class NeverBetOnThemConsensus(SensibleDefaultsConsensus):
         super().__init__()
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False #[False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
@@ -232,7 +232,7 @@ class EveryoneIsWrongConsensus(SensibleDefaultsConsensus):
         super().__init__()
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False #[False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
@@ -270,7 +270,7 @@ class ShiftThatParadigmConsensus(SensibleDefaultsConsensus):
         super().__init__()
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False #[False]*len(interpretations)
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
@@ -284,8 +284,7 @@ class ShiftThatParadigmConsensus(SensibleDefaultsConsensus):
 
         tension_metric()
         if self.is_tension == True:
-            for i in range(self.number_of_interpreters):
-                self.cosmology_judgment[i] = True
+            self.cosmology_judgment = True
 
          # here we need to fix a new base model and communicate that to all the interpreters
 

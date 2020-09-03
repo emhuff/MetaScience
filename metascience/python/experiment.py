@@ -1,6 +1,10 @@
 from abc import ABCMeta, abstractmethod,abstractproperty
 import numpy as np
+import scipy
 from scipy.integrate import solve_ivp as solver
+# For debugging:
+import ipdb
+import matplotlib.pyplot as plt
 
 class Experiment(metaclass=ABCMeta):
     def __init__(self):
@@ -96,13 +100,39 @@ class SimplePendulumExperiment(Experiment):
         noise_vector = noise_std_dev * np.random.randn(self.times.size)
         self.observed_data_vector = self.observed_data_vector + noise_vector
 
+    def _add_systematics(self,):
+        '''
+        This lets the experiment generate systematics that are guaranteed
+        to be (eventually) successfully modeled by the interpreter, if it is
+        also using Hankel functions to model the systematics.
+        This function picks coefficients of the Hankel expansion at random,
+        with amplitudes that in general decrease as they go to higher order.
+        Fitting the first N terms is thus always a good but limited
+        approximation to the true model.
 
-    def _add_systematics(self):
+        Adding terms in the Hankel basis functions to approximate systematics
+        '''
+        #
+        n_coeff = 25
+        parameters = .1/(np.arange(n_coeff)+1) * np.random.randn(n_coeff) #coeffs get smaller at higher order...
+        added_systematics_vector = np.zeros_like(self.times)
+        systematics_vector = np.zeros_like(self.observed_data_vector)
+        for nu,coeff in enumerate(parameters):
+            #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,self.times)
+            if np.sum(~np.isfinite(thissys)) > 0:
+                if nu == 0:
+                    thissys[~np.isfinite(thissys)] = coeff
+                else:
+                    thissys[~np.isfinite(thissys)] = 0.
+            systematics_vector = systematics_vector + thissys.real
+        self.observed_data_vector = self.observed_data_vector + systematics_vector
+
+    def _add_systematics_devilish(self):
         '''
         Creating a 'boost' by multiplying the normal linear gradient of data/time
         by a boost (driving) factor
         adding a systematic error
-
         '''
         boost_deriv = self.systematics_parameters[0]
         time_deriv = self.times - self.times[::-1] # compute the time deriv vector

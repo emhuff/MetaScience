@@ -7,6 +7,7 @@ class Cosmology(metaclass = ABCMeta):
         self.n_parameters = False
         self.n_cosmological = False
         self.n_nuisance = False
+        self.name = 'base cosmology. Probably you should actually give me a name.'
         pass
 
     @abstractmethod
@@ -89,6 +90,7 @@ class StraightLineCosmology(Cosmology):
         self.complexity = 0
         self.n_cosmological = 1
         self.n_nuisance = 1
+        self.name = 'straight-line cosmology'
         self.n_parameters = self.n_cosmological + self.n_nuisance
         self.fiducial_cosmological_parameters = np.array([1.])
         self.fiducial_nuisance_parameters = np.array([0.])
@@ -111,6 +113,7 @@ class CosineCosmology(Cosmology):
         self.complexity = 1
         self.n_cosmological = 1
         self.n_nuisance = 2
+        self.name = "Cosine cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0])
         self.fiducial_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
@@ -136,6 +139,7 @@ class TrueCosmology(Cosmology):
     def __init__(self):
         self.n_cosmological = 1
         self.n_nuisance = 6
+        self.name = 'Damped-driven harmonic oscillator cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0])
         self.fiducial_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])

@@ -11,7 +11,7 @@ true_parameters = truth.get_parameter_set()
 true_parameters[3] = np.sqrt(12.)
 true_parameters[1] = 0.5
 # We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(0,5,500)}
+experimental_parameters1 = {'times':np.linspace(1,8,500)}
 noise_parameters1 = np.array([0.03])
 true_systematics_parameters1 = np.array([.01])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
@@ -19,7 +19,7 @@ pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                cosmology_parameters=true_parameters[:truth.n_cosmological],
                                                nuisance_parameters=true_parameters[truth.n_cosmological:],
                                                systematics_parameters=true_systematics_parameters1,
-                                               noise_parameters = noise_parameters1)
+                                               noise_parameters = noise_parameters1,seed=110)
 pendulum1.generate_data()
 
 
@@ -63,6 +63,7 @@ still_ok = True
 for iter in range(n_iter):
     print(f"------------------------------")
     print(f"Iteration {iter}:")
+    print(f"Using cosmology: {this_cosmology.name}")
     for interpreter in interpreters:
         interpreter.fit_model()
         if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance) < 0):

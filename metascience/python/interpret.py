@@ -143,9 +143,11 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         else:
             raise NotImplementedError
         '''
-        added_systematics_vector = np.zeros_like(self.times)
         for nu,coeff in enumerate(parameters):
-            thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
+
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,self.times)
+
+            #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
             if np.sum(~np.isfinite(thissys)) > 0:
                 if nu == 0:
                     thissys[~np.isfinite(thissys)] = coeff
@@ -153,7 +155,6 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                     thissys[~np.isfinite(thissys)] = 0.
             data_vector = data_vector + thissys.real
 
-        #added_systematics_vector = scipy.special.hankel1(order_of_function,self.times)
         return data_vector
 
     def fit_model(self):
@@ -192,7 +193,8 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         guess = np.concatenate([self.cosmology.fiducial_cosmological_parameters,self.cosmology.fiducial_nuisance_parameters,self.starting_systematics_parameters])
 
         # fit for parameters
-        best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm')
+        # Think about the number of iterations required to make convergence likely under our normal modeling scenarios.
+        best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm', options = {'maxiter':10000*(guess.size+1)})
 
         self.chi2 = evaluate_logL(best_fit_parameters.x,return_chisq=True)#/len(self.measured_data_vector) # save the best-fit chi2
         # This is what the interpreter thinks the data would look like without systematics, based on its best fit
@@ -208,7 +210,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         # Find and store the best-fit parameter covariance.
         # Note that cov_x isn't the true parameter covariance, it is a relative covariance,
         # So our covmat needs to be rescaled by the residuals aka chi2
-
+        # See https://scipy.github.io/devdocs/generated/scipy.optimize.curve_fit.html under absolute_sigma parameter
         # pcov(absolute_sigma=False) = pcov(absolute_sigma=True) * chisq(popt)/(M-N)
         try:
             relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
@@ -216,6 +218,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             self.best_fit_cosmological_parameter_covariance = absCovmat
         except:
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
+            print(f"fit failed to coverge because: {best_fit_parameters.message} ")
             print('covariance is None: setting to -1')
 
         # apply success flag from fit parameters to fit status
