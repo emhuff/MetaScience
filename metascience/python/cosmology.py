@@ -108,6 +108,30 @@ class StraightLineCosmology(Cosmology):
         return model_data_vector
 
 
+
+class ExponentialCosmology(Cosmology):
+    def __init__(self):
+        self.complexity = 0
+        self.n_cosmological = 1
+        self.n_nuisance = 1
+        self.name = 'exponential cosmology'
+        self.n_parameters = self.n_cosmological + self.n_nuisance
+        self.fiducial_cosmological_parameters = np.array([1.])
+        self.fiducial_nuisance_parameters = np.array([0.])
+
+    def get_parameter_set(self):
+        parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
+        return parameters
+
+    def generate_model_data_vector(self,times,parameters):
+        timescale = parameters[0]
+        amplitude = parameters[1]
+
+        # for now assuming a straight line with the intercept the nuisance parameter that isn't the cosmology
+        model_data_vector = amplitude*np.exp(-np.abs(times)/np.abs(timescale+1.))
+        return model_data_vector
+
+
 class CosineCosmology(Cosmology):
     def __init__(self):
         self.complexity = 1

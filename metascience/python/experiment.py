@@ -113,13 +113,15 @@ class SimplePendulumExperiment(Experiment):
         Adding terms in the Hankel basis functions to approximate systematics
         '''
         #
-        n_coeff = 25
+        n_coeff = 5
         parameters = .1/(np.arange(n_coeff)+1) * np.random.randn(n_coeff) #coeffs get smaller at higher order...
         added_systematics_vector = np.zeros_like(self.times)
         systematics_vector = np.zeros_like(self.observed_data_vector)
         for nu,coeff in enumerate(parameters):
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
-            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,self.times)
+            arg = self.times / (np.max(self.times) - np.min(self.times))
+            arg = arg - np.min(arg)
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,arg)
             if np.sum(~np.isfinite(thissys)) > 0:
                 if nu == 0:
                     thissys[~np.isfinite(thissys)] = coeff

@@ -144,8 +144,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             raise NotImplementedError
         '''
         for nu,coeff in enumerate(parameters):
+            arg = self.times / (np.max(self.times) - np.min(self.times))
+            arg = arg - np.min(arg)
 
-            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,self.times)
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,arg)
 
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
             if np.sum(~np.isfinite(thissys)) > 0:
@@ -171,6 +173,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             notes:
                 is the syntax right for something dotted with itself?
                 is the covariance attached in the right way?
+                let's try including a prior over the systematics...
             '''
             model_data_vector = self.cosmology.generate_model_data_vector(self.times,parameters[:self.cosmology.n_parameters])
             # add systematics to the model
@@ -183,10 +186,15 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
             chisq = np.dot(delta.T, np.dot(self.inverse_covariance,delta))
             chi = np.dot(self.inverse_covariance,delta)
+
+            syspars = parameters[self.cosmology.n_parameters:]
+            syspars_prior = .1/(np.arange(len(syspars))+1)
+            chi_with_prior = np.concatenate([chi,syspars/syspars_prior])
+
             if return_chisq:
                 return chisq
             else:
-                return chi
+                return chi_with_prior
 
 
         # generate a guess in the right order.

@@ -11,7 +11,7 @@ true_parameters = truth.get_parameter_set()
 true_parameters[3] = np.sqrt(12.)
 true_parameters[1] = 0.5
 # We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(1,8,500)}
+experimental_parameters1 = {'times':np.linspace(1.,8.,500)}
 noise_parameters1 = np.array([0.03])
 true_systematics_parameters1 = np.array([.01])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
@@ -42,7 +42,7 @@ n_experiments = 2
 experiments = [pendulum1,pendulum2]
 noise_parameters = [noise_parameters1,noise_parameters2]
 
-cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology()] # we will start with the last item first!
+cosmologies = [cosmology.TrueCosmology(),cosmology.CosineCosmology()]#, cosmology.ExponentialCosmology()] # we will start with the last item first!
 this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
@@ -58,7 +58,7 @@ for i in range(n_experiments):
 
 
 
-n_iter = 15
+n_iter = 100
 still_ok = True
 for iter in range(n_iter):
     print(f"------------------------------")
@@ -85,10 +85,13 @@ for iter in range(n_iter):
     fig,ax = plt.subplots(figsize=(7,7))
     ax.plot(pendulum1.times,pendulum1.observed_data_vector,label='data 1')
     ax.plot(interpreters[0].times,interpreters[0].best_fit_observed_model,label='model 1')
+    ax.plot(interpreters[0].times,interpreters[0].best_fit_ideal_model,label='ideal 1',linestyle='--')
     ax.plot(pendulum2.times,pendulum2.observed_data_vector,label='data 2')
     ax.plot(interpreters[1].times,interpreters[1].best_fit_observed_model,label='model 2')
+    ax.plot(interpreters[1].times,interpreters[1].best_fit_ideal_model,label='ideal 2',linestyle='--')
     ax.legend(loc='best')
     fig.savefig(filename)
+    plt.close(fig)
 
     # Now pass the result to the consensus.
     sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
@@ -96,8 +99,8 @@ for iter in range(n_iter):
     print(f"value of the tension parameter: {sensible.tm}")
     print(f"tension: {sensible.is_tension}")
     sensible.render_judgment()
-    if not sensible.is_tension:
-        print('No tension, yay!')
+    if (not sensible.is_tension) and (np.sum(sensible.systematics_judgment) == 0):
+        print('No tension, and everybody fits the data yay!')
         break
     if sensible.cosmology_judgment is True:
         print(f"Updating the cosmology")
