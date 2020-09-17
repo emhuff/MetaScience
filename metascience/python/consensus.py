@@ -44,7 +44,7 @@ class Consensus(metaclass=ABCMeta):
         '''
         raise NotImplementedError()
 
-class SensibleDefaultsConsensus(Consensus):
+class DefaultConsensus(Consensus):
 
 
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25):
@@ -119,7 +119,85 @@ class SensibleDefaultsConsensus(Consensus):
                 #    self.cosmology_judgment[i] = True
 
 
-class SeminarConsensus(SensibleDefaultsConsensus):
+
+class ImpatientConsensus(Consensus):
+
+
+    def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = None )
+        self.name = 'Impatient Consensus'
+        self.interpretations = interpretations
+        self.systematics_judgment = [False]*len(interpretations)
+        self.cosmology_judgment = False
+        self.number_of_interpreters = len(interpretations)
+        self.is_tension = False
+        self.tm = np.zeros(len(interpretations))
+        self.chi2_dof_threshold = chi2_dof_threshold
+        self.patience = patience
+
+
+    def tension_metric(self):
+        '''
+        Define what you think the default tension metric should be
+        '''
+        self.tm[0] = 0 #tension metric between others and the 0th interpreter.
+        # for each experiment get tension with the "chosen one."
+        for i, this_interp in enumerate(self.interpretations[1:]):
+
+            # difference between parameters inferred
+            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
+            # combination of covariance of parameters inferred
+            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
+
+            # chisq difference in matrix form
+
+            self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
+        if np.sum(self.tm > 1.) > 0:
+            self.is_tension=True
+
+
+    def _update_parameters(self):
+            '''
+            For this consensus, combine the results of the provided interpretation
+             modules to get a best estimate of the *cosmological* parameters.
+            '''
+            chi2vec = [self.interpretations[i].chi2 for i in range(self.number_of_interpreters)]
+            #ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0][0]
+            ind = np.argmin(chi2vec)
+
+            self.consensus_cosmological_parameters = self.interpretations[ind].best_fit_cosmological_parameters
+            self.consensus_parameter_covariance = self.interpretations[ind].best_fit_cosmological_parameter_covariance
+
+    def render_judgment(self, number_of_tries = 0):
+        '''
+        If there is a tension and the reduced chi2 values are high, update systematics.
+        If there is a tension and they are low, change the cosmology model.
+        If the fits are not all good, but we've been updating systematics for too long, change the cosmology.
+        '''
+
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+        for i, this_interp in enumerate(self.interpretations):
+            if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                self.systematics_judgment[i] = True
+
+        if self.is_tension:
+            if all(chi2_list < self.chi2_dof_threshold):
+                self.cosmology_judgment = True
+
+        if (np.sum(chi2_list >= self.chi2_dof_threshold) > 0) and (number_of_tries > self.patience):
+            self.cosmology_judgment = True
+            self.systematics_judgment = [False]*len(self.interpretations)
+
+
+
+
+        self._update_parameters()
+                #for i in range(self.number_of_interpreters):
+                #    self.cosmology_judgment[i] = True
+
+
+class SeminarConsensus(DefaultConsensus):
     '''
     '''
     def __init__(self, interprations = None):
@@ -145,7 +223,7 @@ class SeminarConsensus(SensibleDefaultsConsensus):
         pass
 
 
-class AlwaysBetOnMeConsensus(SensibleDefaultsConsensus):
+class AlwaysBetOnMeConsensus(DefaultConsensus):
     '''
     Define tension with respect to 0th interpretation, which never updates
     their model if there is a tension and all others do. Opposite of
@@ -186,7 +264,7 @@ class AlwaysBetOnMeConsensus(SensibleDefaultsConsensus):
         self._update_parameters()
 
 
-class BetOnMeConsensus(SensibleDefaultsConsensus):
+class BetOnMeConsensus(DefaultConsensus):
     '''
     Define tension with respect to 0th interpretation, which has a higher error
     tolerance so is less likely to update their systematics model. Otherwise
@@ -231,7 +309,7 @@ class BetOnMeConsensus(SensibleDefaultsConsensus):
         self._update_parameters()
 
 
-class NeverBetOnMeConsensus(SensibleDefaultsConsensus):
+class NeverBetOnMeConsensus(DefaultConsensus):
     '''
     Define tension with respect to 0th interpretation, which always updates
     its systematics model if there is a tension, and the others never do.
@@ -273,14 +351,14 @@ class NeverBetOnMeConsensus(SensibleDefaultsConsensus):
         self._update_parameters()
 
 
-class BetOnThemConsensus(SensibleDefaultsConsensus):
+class BetOnThemConsensus(DefaultConsensus):
     '''
     Corollary to BetOnMeConsensus
     '''
     pass
 
 
-class EveryoneIsWrongConsensus(SensibleDefaultsConsensus):
+class EveryoneIsWrongConsensus(DefaultConsensus):
     '''
     '''
     def __init__(self, interprations):
@@ -315,7 +393,7 @@ class EveryoneIsWrongConsensus(SensibleDefaultsConsensus):
         self._update_parameters()
 
 
-class ShiftThatParadigmConsensus(SensibleDefaultsConsensus):
+class ShiftThatParadigmConsensus(DefaultConsensus):
     '''
     '''
     def __init__(self, interprations):
@@ -341,7 +419,7 @@ class ShiftThatParadigmConsensus(SensibleDefaultsConsensus):
         self._update_parameters()
 
 
-class UnderestimatedErrorConsensus(SensibleDefaultsConsensus):
+class UnderestimatedErrorConsensus(DefaultConsensus):
     '''
     '''
     def __init__(self, interprations):

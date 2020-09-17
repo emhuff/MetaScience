@@ -11,7 +11,7 @@ true_parameters = truth.get_parameter_set()
 true_parameters[3] = np.sqrt(12.)
 true_parameters[1] = 0.5
 # We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(1.,8.,500)}
+experimental_parameters1 = {'times':np.linspace(2.,8.,500)}
 noise_parameters1 = np.array([0.03])
 true_systematics_parameters1 = np.array([.01])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
@@ -60,6 +60,7 @@ for i in range(n_experiments):
 
 n_iter = 100
 still_ok = True
+systematics_iter = np.zeros(n_experiments)
 for iter in range(n_iter):
     print(f"------------------------------")
     print(f"Iteration {iter}:")
@@ -94,29 +95,32 @@ for iter in range(n_iter):
     plt.close(fig)
 
     # Now pass the result to the consensus.
-    sensible = consensus.SensibleDefaultsConsensus(interpretations = interpreters)
-    sensible.tension_metric()
-    print(f"value of the tension parameter: {sensible.tm}")
-    print(f"tension: {sensible.is_tension}")
-    sensible.render_judgment()
-    if (not sensible.is_tension) and (np.sum(sensible.systematics_judgment) == 0):
+    impatient = consensus.ImpatientConsensus(interpretations = interpreters)
+    impatient.tension_metric()
+    print(f"value of the tension parameter: {impatient.tm}")
+    print(f"tension: {impatient.is_tension}")
+    impatient.render_judgment(number_of_tries = np.max(systematics_iter))
+    if np.max(systematics_iter) > impatient.patience:
+        print(f"Got tired of further refining experiments after {impatient.patience} iterations. Changing the cosmology")
+    if (not impatient.is_tension) and (np.sum(impatient.systematics_judgment) == 0):
         print('No tension, and everybody fits the data yay!')
         break
-    if sensible.cosmology_judgment is True:
+    if impatient.cosmology_judgment is True:
         print(f"Updating the cosmology")
+        systematics_iter[:] = 0
         if len(cosmologies) == 0:
             print('Ran out of cosmologies to try!')
             break
         this_cosmology = cosmologies.pop()
         for i,interpreter in enumerate(interpreters):
-
             interpreters[i] = interpret.SimplePendulumExperimentInterpreter(experiment = experiments[i], cosmology=this_cosmology,
             starting_systematics_parameters = starting_systematics_parameters[i], noise_parameters = noise_parameters[i])
 
 # here we have some choice about whether to start from square 1 with systematics parameters (if not, could try interpreter.best_fit_systematics_parameters)
     else:
-        if np.sum(sensible.systematics_judgment) > 0:
-            for i,this_judgment in enumerate(sensible.systematics_judgment):
+        if np.sum(impatient.systematics_judgment) > 0:
+            systematics_iter[impatient.systematics_judgment] = systematics_iter[impatient.systematics_judgment]+1
+            for i,this_judgment in enumerate(impatient.systematics_judgment):
                 if this_judgment:
                     print(f"Adding systematic error sophistication to interpreter {i}.")
                     systematics_parameters[i] = np.concatenate((systematics_parameters[i],np.zeros(1)))
