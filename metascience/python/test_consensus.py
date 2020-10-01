@@ -13,7 +13,7 @@ true_parameters[1] = 0.5
 # We need two different experiments.
 experimental_parameters1 = {'times':np.linspace(2.,8.,500)}
 noise_parameters1 = np.array([0.03])
-true_systematics_parameters1 = np.array([.01])
+true_systematics_parameters1 = np.array([.00])
 pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                experimental_parameters=experimental_parameters1,
                                                cosmology_parameters=true_parameters[:truth.n_cosmological],
@@ -25,7 +25,7 @@ pendulum1.generate_data()
 
 experimental_parameters2 = {'times':np.linspace(0,10,500)}
 noise_parameters2 = np.array([0.03])
-true_systematics_parameters2 = np.array([.01])
+true_systematics_parameters2 = np.array([.00])
 pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
                                                experimental_parameters=experimental_parameters2,
                                                cosmology_parameters=true_parameters[:truth.n_cosmological],
@@ -84,10 +84,10 @@ for iter in range(n_iter):
     # Plot the fits.
     filename = f"pendulum_iter-{iter:03}.png"
     fig,ax = plt.subplots(figsize=(7,7))
-    ax.plot(pendulum1.times,pendulum1.observed_data_vector,label='data 1')
+    ax.plot(pendulum1.times,pendulum1.observed_data_vector,label='data 1',marker='.')
     ax.plot(interpreters[0].times,interpreters[0].best_fit_observed_model,label='model 1')
     ax.plot(interpreters[0].times,interpreters[0].best_fit_ideal_model,label='ideal 1',linestyle='--')
-    ax.plot(pendulum2.times,pendulum2.observed_data_vector,label='data 2')
+    ax.plot(pendulum2.times,pendulum2.observed_data_vector,label='data 2',marker='.')
     ax.plot(interpreters[1].times,interpreters[1].best_fit_observed_model,label='model 2')
     ax.plot(interpreters[1].times,interpreters[1].best_fit_ideal_model,label='ideal 2',linestyle='--')
     ax.legend(loc='best')

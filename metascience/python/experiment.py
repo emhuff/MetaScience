@@ -65,6 +65,7 @@ class SimplePendulumExperiment(Experiment):
                     cosmology = None,
                     noise_parameters = None,
                     systematics_parameters = None,
+                    lowest_systematics_coeff = 20,
                     seed=999):
         super().__init__()
         self.kind = 'pendulum'
@@ -76,7 +77,7 @@ class SimplePendulumExperiment(Experiment):
         self.times = experimental_parameters['times']
         self.systematics_parameters = systematics_parameters
         self.noise_parameters = noise_parameters
-
+        self.lowest_systematics_coeff = lowest_systematics_coeff
 
 
         self.seed = np.random.seed(seed=seed)
@@ -100,7 +101,7 @@ class SimplePendulumExperiment(Experiment):
         noise_vector = noise_std_dev * np.random.randn(self.times.size)
         self.observed_data_vector = self.observed_data_vector + noise_vector
 
-    def _add_systematics(self,):
+    def _add_systematics(self):
         '''
         This lets the experiment generate systematics that are guaranteed
         to be (eventually) successfully modeled by the interpreter, if it is
@@ -112,23 +113,22 @@ class SimplePendulumExperiment(Experiment):
 
         Adding terms in the Hankel basis functions to approximate systematics
         '''
-        #
-        n_coeff = 5
-        parameters = .1/(np.arange(n_coeff)+1) * np.random.randn(n_coeff) #coeffs get smaller at higher order...
+        # Check to see if systematics parameters exist.
+        parameters = self.systematics_parameters
         added_systematics_vector = np.zeros_like(self.times)
-        systematics_vector = np.zeros_like(self.observed_data_vector)
+        self.systematics_vector = np.zeros_like(self.observed_data_vector)
         for nu,coeff in enumerate(parameters):
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
             arg = self.times / (np.max(self.times) - np.min(self.times))
             arg = arg - np.min(arg)
-            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,arg)
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1+self.lowest_systematics_coeff,arg)
             if np.sum(~np.isfinite(thissys)) > 0:
                 if nu == 0:
                     thissys[~np.isfinite(thissys)] = coeff
                 else:
                     thissys[~np.isfinite(thissys)] = 0.
-            systematics_vector = systematics_vector + thissys.real
-        self.observed_data_vector = self.observed_data_vector + systematics_vector
+            self.systematics_vector = self.systematics_vector + thissys.real
+        self.observed_data_vector = self.observed_data_vector + self.systematics_vector
 
     def _add_systematics_devilish(self):
         '''

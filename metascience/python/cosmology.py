@@ -139,8 +139,8 @@ class CosineCosmology(Cosmology):
         self.n_nuisance = 2
         self.name = "Cosine cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([1.0])
-        self.fiducial_nuisance_parameters = np.array([0.0,1.0]) #not sure about values
+        self.fiducial_cosmological_parameters = np.array([1.0]) # frequency
+        self.fiducial_nuisance_parameters = np.array([1.0,1.0]) # amplitude, phase
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -180,9 +180,9 @@ class TrueCosmology(Cosmology):
         '''
         w = parameters[0]
         c = parameters[1]
-        A = parameters[2]
-        wd = parameters[3]
-        phid = parameters[4]
+        A = parameters[2] # amplitude of driver
+        wd = parameters[3] # frequency of driver
+        phid = parameters[4] # phase of driver
         theta_x0 = parameters[5]
         theta_v0 = parameters[6]
 

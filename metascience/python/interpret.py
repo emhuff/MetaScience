@@ -124,7 +124,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_cosmological_parameters = None
         self.best_fit_nuisance_parameters = None
         self.best_fit_systematics_parameters = None
-
+        self.lowest_systematics_coeff = 20
         self.fit_status = None
 
 
@@ -143,11 +143,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         else:
             raise NotImplementedError
         '''
+        self.systematics_only = np.zeros_like(data_vector)
         for nu,coeff in enumerate(parameters):
             arg = self.times / (np.max(self.times) - np.min(self.times))
             arg = arg - np.min(arg)
 
-            thissys = coeff*scipy.special.eval_laguerre(2*nu+1,arg)
+            thissys = coeff*scipy.special.eval_laguerre(2*nu+1+self.lowest_systematics_coeff,arg)
 
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
             if np.sum(~np.isfinite(thissys)) > 0:
@@ -155,6 +156,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                     thissys[~np.isfinite(thissys)] = coeff
                 else:
                     thissys[~np.isfinite(thissys)] = 0.
+            self.systematics_only = self.systematics_only+thissys.real
             data_vector = data_vector + thissys.real
 
         return data_vector
@@ -176,11 +178,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
                 let's try including a prior over the systematics...
             '''
             model_data_vector = self.cosmology.generate_model_data_vector(self.times,parameters[:self.cosmology.n_parameters])
+            #print(parameters)
             # add systematics to the model
             model_with_systematics = self._add_systematics(model_data_vector,parameters = parameters[self.cosmology.n_parameters:])
-
             # calculate difference between model and data
-            delta = model_with_systematics - self.measured_data_vector
+            #delta = model_with_systematics - self.measured_data_vector
+            delta = model_data_vector - self.measured_data_vector
 
             # calcualte chisq
 
@@ -188,13 +191,13 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             chi = np.dot(self.inverse_covariance,delta)
 
             syspars = parameters[self.cosmology.n_parameters:]
-            syspars_prior = .1/(np.arange(len(syspars))+1)
+            syspars_prior = .0001/(np.arange(len(syspars))+1)
             chi_with_prior = np.concatenate([chi,syspars/syspars_prior])
 
             if return_chisq:
                 return chisq
             else:
-                return chi_with_prior
+                return chi#_with_prior
 
 
         # generate a guess in the right order.
