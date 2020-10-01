@@ -65,7 +65,7 @@ class SimplePendulumExperiment(Experiment):
                     cosmology = None,
                     noise_parameters = None,
                     systematics_parameters = None,
-                    lowest_systematics_coeff = 20,
+                    lowest_systematics_coeff = 500,
                     seed=999):
         super().__init__()
         self.kind = 'pendulum'

@@ -7,7 +7,7 @@ import cosmology
 truth = cosmology.TrueCosmology()
 experimental_parameters = {'times':np.linspace(0,7,500)}
 noise_parameters = np.array([.1])
-n_sys_coeff = 3
+n_sys_coeff = 5
 true_systematics_parameters = .1/(np.arange(n_sys_coeff)+1) * np.random.randn(n_sys_coeff)
 true_parameters = truth.get_parameter_set()
 pendulum = experiment.SimplePendulumExperiment(cosmology=truth,
@@ -20,7 +20,7 @@ pendulum.generate_data()
 
 model = cosmology.CosineCosmology()
 #noise_parameters = np.array([0.2])
-starting_systematics_parameters = true_systematics_parameters
+starting_systematics_parameters = np.zeros_like(true_systematics_parameters)
 
 pendulum_interp = interpret.SimplePendulumExperimentInterpreter(experiment = pendulum,
                                                                  starting_systematics_parameters = starting_systematics_parameters,
@@ -37,6 +37,7 @@ chi2dof = pendulum_interp.chi2*1./len(pendulum.observed_data_vector)
 print(f"best-fit cosmological parameters: {w_fit}")
 print(f"true cosmological parameters: {w_true}")
 print(f"goodness-of-fit: {chi2dof}")
+
 
 plt.errorbar(pendulum.times,pendulum.observed_data_vector,np.zeros(pendulum.times.size)+noise_parameters,fmt=',',linestyle='None', label='data',zorder=1)
 plt.plot(pendulum.times,pendulum_interp.best_fit_observed_model,label='fit',zorder=2,linewidth=3)
