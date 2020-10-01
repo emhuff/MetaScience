@@ -139,8 +139,8 @@ class CosineCosmology(Cosmology):
         self.n_nuisance = 2
         self.name = "Cosine cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([1.0]) # frequency
-        self.fiducial_nuisance_parameters = np.array([1.0,1.0]) # amplitude, phase
+        self.fiducial_cosmological_parameters = np.array([.50]) # frequency
+        self.fiducial_nuisance_parameters = np.array([2.0,.0]) # amplitude, phase
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -153,8 +153,7 @@ class CosineCosmology(Cosmology):
         constant_theta_0 = parameters[1]
         constant_phase = parameters[2]
 
-        model_data_vector = constant_theta_0 \
-        * np.cos(constant_w * times + constant_phase)
+        model_data_vector = constant_theta_0*np.cos(constant_w * times + constant_phase)
         return model_data_vector
 
 
@@ -165,8 +164,9 @@ class TrueCosmology(Cosmology):
         self.n_nuisance = 6
         self.name = 'Damped-driven harmonic oscillator cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([1.0])
-        self.fiducial_nuisance_parameters = np.array([0.1,1.0,0.3,np.pi,0.0,1.0])
+        self.fiducial_cosmological_parameters = np.array([1.0]) # w
+        self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
+#        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])

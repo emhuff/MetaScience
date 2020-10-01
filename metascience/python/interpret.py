@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import scipy
-
 #import cosmology ???
 
 class ExperimentInterpreter(metaclass=ABCMeta):
@@ -147,7 +146,6 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         for nu,coeff in enumerate(parameters):
             arg = self.times / (np.max(self.times) - np.min(self.times))
             arg = arg - np.min(arg)
-
             thissys = coeff*scipy.special.eval_laguerre(2*nu+1+self.lowest_systematics_coeff,arg)
 
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
@@ -182,8 +180,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             # add systematics to the model
             model_with_systematics = self._add_systematics(model_data_vector,parameters = parameters[self.cosmology.n_parameters:])
             # calculate difference between model and data
-            #delta = model_with_systematics - self.measured_data_vector
-            delta = model_data_vector - self.measured_data_vector
+            delta = model_with_systematics - self.measured_data_vector
 
             # calcualte chisq
 
@@ -202,11 +199,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
         # generate a guess in the right order.
         guess = np.concatenate([self.cosmology.fiducial_cosmological_parameters,self.cosmology.fiducial_nuisance_parameters,self.starting_systematics_parameters])
-
+        print(f"Initial guess:{guess}")
         # fit for parameters
         # Think about the number of iterations required to make convergence likely under our normal modeling scenarios.
         best_fit_parameters = scipy.optimize.root(evaluate_logL, guess, method = 'lm', options = {'maxiter':10000*(guess.size+1)})
-
         self.chi2 = evaluate_logL(best_fit_parameters.x,return_chisq=True)#/len(self.measured_data_vector) # save the best-fit chi2
         # This is what the interpreter thinks the data would look like without systematics, based on its best fit
         self.best_fit_ideal_model = self.cosmology.generate_model_data_vector(self.times,best_fit_parameters.x[:self.cosmology.n_parameters])
@@ -218,6 +214,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.best_fit_nuisance_parameters = best_fit_parameters.x[self.cosmology.n_cosmological:self.cosmology.n_parameters]
         self.best_fit_systematics_parameters = best_fit_parameters.x[self.cosmology.n_parameters:]
 
+        print(f"best fit:{best_fit_parameters.x}")
         # Find and store the best-fit parameter covariance.
         # Note that cov_x isn't the true parameter covariance, it is a relative covariance,
         # So our covmat needs to be rescaled by the residuals aka chi2
