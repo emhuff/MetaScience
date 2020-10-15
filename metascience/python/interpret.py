@@ -147,7 +147,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             arg = self.times / (np.max(self.times) - np.min(self.times))
             arg = arg - np.min(arg)
             actual_nu = 2*nu+1+self.lowest_systematics_coeff
-            print(f"nu: {actual_nu}")
+            #print(f"nu: {actual_nu}")
             thissys = coeff*scipy.special.eval_laguerre(2*nu+1+self.lowest_systematics_coeff,arg)
             #thissys = coeff*scipy.special.hankel1(nu,self.times/np.max(self.times)*2*np.pi)
             if np.sum(~np.isfinite(thissys)) > 0:
