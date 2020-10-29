@@ -265,11 +265,11 @@ class DampedDrivenOscillatorCosmology(Cosmology):
 
 class DampedDrivenOscillatorVariableGCosmology(Cosmology):
     def __init__(self):
-        self.n_cosmological = 1
+        self.n_cosmological = 2
         self.n_nuisance = 6
         self.name = 'Damped-driven harmonic oscillator cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([1.0]) # w
+        self.fiducial_cosmological_parameters = np.array([1.0, 0.0]) # w
         self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
 #        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
 
