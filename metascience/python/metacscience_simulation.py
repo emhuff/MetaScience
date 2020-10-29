@@ -31,21 +31,23 @@ def run_consensus_compare(consensus, interpreters, starting_cosmology, true_cosm
     else:
         print(f'Ok buddy relax')
 
-
-    experiments = {}
+    experiments=[]
     for i in range(len(interpreters)):
-        experiments{i} = getattr(experiment,interpreters[i])
-        experiments{i}(cosmology=truth,experimental_parameters=experimental_parameters[i],
-                                                       cosmology_parameters=true_parameters[:truth.n_cosmological],
-                                                       nuisance_parameters=true_parameters[truth.n_cosmological:],
+        experiments.append(getattr(experiment,interpreters[i]))
+        this_experiment = getattr(experiment,interpreters[i])
+        experiments[i] = this_experiment(cosmology=truth,experimental_parameters=experimental_parameters[i],
+        cosmology_parameters=true_parameters[:truth.n_cosmological],nuisance_parameters=true_parameters[truth.n_cosmological:],
                                                        systematics_parameters=true_systematics_parameters[i],
                                                        noise_parameters = noise_parameters[i],seed=110)
 
+
+# Note to renee, you need to figure out how to loop over the clases
 
 consensusize = ['ImpatientConsensus', 'ImpatientConsensus']
 experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
 noise_parameters = [np.array([0.03]), np.array([0.1])]
 number_of_consensus = len(consensusize)
+
 interpreters = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
 number_of_interpreters=len(interpreters)
 starting_cosmology = 'CosineCosmology'
@@ -54,34 +56,6 @@ true_cosmology = 'DampedDrivenOscillatorCosmology'
 run_consensus_compare(consensusize[0], interpreters, starting_cosmology, true_cosmology, experimental_parameters, noise_parameters)
 
 print('yo', yo)
-
-truth = cosmology.DampedDrivenOscillatorCosmology()
-# These parameters are shared:
-true_parameters = truth.get_parameter_set()
-true_parameters[3] = np.sqrt(12.)
-true_parameters[1] = 0.5
-# We need two different experiments.
-experimental_parameters1 = {'times':np.linspace(2.,8.,500)}
-noise_parameters1 = np.array([0.03])
-true_systematics_parameters1 = np.array([.00])
-pendulum1 = experiment.SimplePendulumExperiment(cosmology=truth,
-                                               experimental_parameters=experimental_parameters1,
-                                               cosmology_parameters=true_parameters[:truth.n_cosmological],
-                                               nuisance_parameters=true_parameters[truth.n_cosmological:],
-                                               systematics_parameters=true_systematics_parameters1,
-                                               noise_parameters = noise_parameters1,seed=110)
-pendulum1.generate_data()
-
-
-experimental_parameters2 = {'times':np.linspace(0,10,500)}
-noise_parameters2 = np.array([0.03])
-true_systematics_parameters2 = np.array([.00])
-pendulum2 = experiment.SimplePendulumExperiment(cosmology=truth,
-                                               experimental_parameters=experimental_parameters2,
-                                               cosmology_parameters=true_parameters[:truth.n_cosmological],
-                                               nuisance_parameters=true_parameters[truth.n_cosmological:],
-                                               systematics_parameters=true_systematics_parameters2,
-                                               noise_parameters = noise_parameters2, seed = 111)
 pendulum2.generate_data()
 
 #plt.plot(pendulum1.times,pendulum1.observed_data_vector,label='1')
