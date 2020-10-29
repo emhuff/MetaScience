@@ -126,6 +126,7 @@ class DefaultConsensus(Consensus):
 
 
 class ImpatientConsensus(Consensus):
+### Should this be an instance of Default Conensus to e.g. use its tension_metric function?
     '''
     same as default, but with patience parameter
     an instance of what used to be "sensible" (now deprecated)
@@ -389,7 +390,29 @@ class MostlyBetOnThemConsensus(DefaultConsensus):
                 self.systematics_judgment[i+1] = False
 
 # TO DO: take into account chi2_dof_threshold as in MostlyBetOnMe
+        '''
+        Measure the tension among the provided interpretation objects
+        Based on this result, issue instructions.
 
+        see metric from above, decide if tension exists
+            interpreter 1 changes their model less often.
+        instruct both other interpreters to change systematics model if fits bad
+            cosmology model updates if there is a tension and fits are good
+        '''
+
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+        for i, this_interp in enumerate(self.interpretations):
+            if i == 0:
+                if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                    self.systematics_judgment[i] = True
+            else:
+                if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                    self.systematics_judgment[i] = True
+
+        if self.is_tension:
+            if all(chi2_list < self.chi2_dof_threshold):
+                self.cosmology_judgment = True
         if (np.sum(self.systematics_judgment) > 0) and (number_of_tries > self.patience):
             self.cosmology_judgment = True
             self.systematics_judgment = [False]*len(self.interpretations)
