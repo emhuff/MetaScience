@@ -308,6 +308,7 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
             x = y[0]
             u = y[1]
             xp = u
+            weff = 
             up = (forcing_function(t) - c * u - w**2 * x)
             return np.array([xp,up])
 

@@ -27,3 +27,4 @@ number_of_interpreters=len(interpreters)
 starting_cosmology = 'CosineCosmology'
 true_cosmology = 'DampedDrivenOscillatorCosmology'
 truth = getattr(cosmology,true_cosmology)
+print(truth)
