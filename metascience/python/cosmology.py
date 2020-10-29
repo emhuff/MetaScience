@@ -156,6 +156,32 @@ class AiryCosmology(Cosmology):
         model_data_vector = constant_theta_0*sp.airy(-constant_w * times + constant_phase)[0]
         return model_data_vector
 
+class GaussianCosmology(Cosmology):
+    def __init__(self):
+        self.complexity = 1
+        self.n_cosmological = 1
+        self.n_nuisance = 4
+        self.name = "Gaussian function"
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
+        self.fiducial_cosmological_parameters = np.array([.50]) # frequency
+        self.fiducial_nuisance_parameters = np.array([1.0,1.0, 1.0, 1.0]) # amplitude, phase
+
+    def get_parameter_set(self):
+        parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
+        return parameters
+
+    def generate_model_data_vector(self,times, parameters = None):
+        # define model for data with parameters above
+
+        constant_w = parameters[0]
+        constant_theta_0 = parameters[1]
+        constant_gauss_amp = parameters[2]
+        constant_phase = parameters[3]
+        constant_sigma = parameters[4]
+
+        model_data_vector = constant_theta_0 - constant_gauss_amp*np.exp(-(times-constant_phase)**2/2./constant_sigma**2)/np.sqrt(2*np.pi*constant_sigma**2)
+        return model_data_vector
+
 class BesselJCosmology(Cosmology):
     def __init__(self):
         self.complexity = 1
@@ -267,7 +293,7 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
     def __init__(self):
         self.n_cosmological = 2
         self.n_nuisance = 6
-        self.name = 'Damped-driven harmonic oscillator cosmology'
+        self.name = 'Damped-driven harmonic oscillator with position-dependent gravity cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0, 0.0]) # w
         self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
@@ -308,7 +334,7 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
             x = y[0]
             u = y[1]
             xp = u
-            weff = w0 + x*wa
+            weff = w0 - x*wa # pendulum gets lighter as we go up
             up = (forcing_function(t) - c * u - weff**2 * x)
             return np.array([xp,up])
 
