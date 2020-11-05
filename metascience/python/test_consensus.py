@@ -44,7 +44,7 @@ noise_parameters = [noise_parameters1,noise_parameters2]
 
 cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
                cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
-               cosmology.ExponentialCosmology(),cosmology.CosineCosmology(),cosmology.StraightLineCosmology()] # we will start with the last item first!
+               cosmology.CosineCosmology(),cosmology.StraightLineCosmology()] # we will start with the last item first!
 this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
@@ -97,17 +97,19 @@ for iter in range(n_iter):
     plt.close(fig)
 
     # Now pass the result to the consensus.
-    impatient = consensus.ImpatientConsensus(interpretations = interpreters)
-    impatient.tension_metric()
-    print(f"value of the tension parameter: {impatient.tm}")
-    print(f"tension: {impatient.is_tension}")
-    impatient.render_judgment(number_of_tries = np.max(systematics_iter))
-    if np.max(systematics_iter) > impatient.patience:
-        print(f"Got tired of further refining experiments after {impatient.patience} iterations. Changing the cosmology")
-    if (not impatient.is_tension) and (np.sum(impatient.systematics_judgment) == 0):
+    #this_consensus = consensus.ImpatientConsensus(interpretations = interpreters)
+    this_consensus = consensus.MostlyBetOnMeConsensus(interpretations = interpreters)
+
+    this_consensus.tension_metric()
+    print(f"value of the tension parameter: {this_consensus.tm}")
+    print(f"tension: {this_consensus.is_tension}")
+    this_consensus.render_judgment(number_of_tries = np.max(systematics_iter))
+    if np.max(systematics_iter) > this_consensus.patience:
+        print(f"Got tired of further refining experiments after {this_consensus.patience} iterations. Changing the cosmology")
+    if (not this_consensus.is_tension) and (np.sum(this_consensus.systematics_judgment) == 0):
         print('No tension, and everybody fits the data yay!')
         break
-    if impatient.cosmology_judgment is True:
+    if this_consensus.cosmology_judgment is True:
         print(f"Updating the cosmology")
         systematics_iter[:] = 0
         if len(cosmologies) == 0:
@@ -120,9 +122,9 @@ for iter in range(n_iter):
 
 # here we have some choice about whether to start from square 1 with systematics parameters (if not, could try interpreter.best_fit_systematics_parameters)
     else:
-        if np.sum(impatient.systematics_judgment) > 0:
-            systematics_iter[impatient.systematics_judgment] = systematics_iter[impatient.systematics_judgment]+1
-            for i,this_judgment in enumerate(impatient.systematics_judgment):
+        if np.sum(this_consensus.systematics_judgment) > 0:
+            systematics_iter[this_consensus.systematics_judgment] = systematics_iter[this_consensus.systematics_judgment]+1
+            for i,this_judgment in enumerate(this_consensus.systematics_judgment):
                 if this_judgment:
                     print(f"Adding systematic error sophistication to interpreter {i}.")
                     systematics_parameters[i] = np.concatenate((systematics_parameters[i],np.zeros(1)))
