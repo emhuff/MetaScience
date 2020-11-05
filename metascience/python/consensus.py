@@ -134,23 +134,6 @@ class ImpatientConsensus(DefaultConsensus):
         self.name = 'Impatient Consensus'
         self.chi2_dof_threshold = chi2_dof_threshold
         self.patience = patience
-<<<<<<< HEAD
-
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
-=======
->>>>>>> 0366e0b32b27f8843432f138240bd4ae066840c2
-
-#        self.interpretations = interpretations
-#        self.systematics_judgment = [False]*len(interpretations)
-#        self.cosmology_judgment = False
-#        self.number_of_interpreters = len(interpretations)
-#        self.is_tension = False
-#        self.tm = np.zeros(len(interpretations))
 
     def render_judgment(self, number_of_tries = 0):
         '''
@@ -188,11 +171,7 @@ class TensionOnlyConsensus(ImpatientConsensus):
     """
 
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
-<<<<<<< HEAD
-        super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold, patience = patience)
-=======
         super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
->>>>>>> 0366e0b32b27f8843432f138240bd4ae066840c2
         self.name = 'TensionOnly Consensus'
         #pretty sure this is all you need to do.... and that code below could be updated accordingly... (BF)
 
@@ -260,7 +239,7 @@ class AlwaysBetOnMeConsensus(DefaultConsensus):
         self._update_parameters()
 
 
-class MostlyBetOnMeConsensus(DefaultConsensus):
+class MostlyBetOnMeConsensus(ImpatientConsensus):
     '''
     Define tension with respect to 0th interpretation, which has a higher error
     tolerance so is less likely to update their systematics model. Otherwise
@@ -269,17 +248,10 @@ class MostlyBetOnMeConsensus(DefaultConsensus):
     philosophy: softer than always bet on me(?); has a different chi-sq thresh
     for changing the cosmology
     '''
-    def __init__(self, interpretations, tolerance = 2, chi2_dof_threshold = 1.25):
-        super().__init__()
+    def __init__(self, interpretations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
         self.name = 'MostlyBetOnMe Consensus'
         self.tolerance = tolerance
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
-        self.chi2_dof_threshold = chi2_dof_threshold
 
 
     def render_judgment(self, number_of_tries = 0):
@@ -363,7 +335,7 @@ class AlwaysBetOnThemConsensus(DefaultConsensus):
         self._update_parameters()
 
 
-class MostlyBetOnThemConsensus(DefaultConsensus):
+class MostlyBetOnThemConsensus(ImpatientConsensus):
     '''
     Corollary to MostlyBetOnMeConsensus
 
@@ -371,17 +343,10 @@ class MostlyBetOnThemConsensus(DefaultConsensus):
     tolerance so are less likely to update their systematics model
     '''
 
-    def __init__(self, interprations, tolerance = 2, chi2_dof_threshold = 1.25):
-        super().__init__()
+    def __init__(self, interprations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
         self.name = 'MostlyBetOnThem Consensus'
-        self.tolerance = tolerance
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
-        self.chi2_dof_threshold = chi2_dof_threshold
+
 
     def _update_parameters(self):
         '''
@@ -466,15 +431,10 @@ class ShiftThatParadigmConsensus(DefaultConsensus):
     If there is a tension, everyone updates their cosmology.
     Never tells interpreters to update systematics.
     '''
-    def __init__(self, interprations):
-        super().__init__()
+    def __init__(self, interpretations):
+        super().__init__(interpretations=interpretations)
         self.name = 'ShiftThatParadigm Consensus'
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
+
 
 
     def render_judgment(self):
