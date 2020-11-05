@@ -42,7 +42,9 @@ n_experiments = 2
 experiments = [pendulum1,pendulum2]
 noise_parameters = [noise_parameters1,noise_parameters2]
 
-cosmologies = [cosmology.DampedDrivenOscillatorCosmology(),cosmology.CosineCosmology()]#, cosmology.ExponentialCosmology()] # we will start with the last item first!
+cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
+               cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
+               cosmology.ExponentialCosmology(),cosmology.CosineCosmology(),cosmology.StraightLineCosmology()] # we will start with the last item first!
 this_cosmology= cosmologies.pop()
 interpreters = []
 n_systematics_parameters = [1,1]
@@ -58,7 +60,7 @@ for i in range(n_experiments):
 
 
 
-n_iter = 100
+n_iter = 1000
 still_ok = True
 systematics_iter = np.zeros(n_experiments)
 for iter in range(n_iter):

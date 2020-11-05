@@ -51,9 +51,8 @@ class DefaultConsensus(Consensus):
     changes
     '''
 
-
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25):
-        super().__init__(interpretations = None )
+        super().__init__( interpretations = interpretations )
         self.name = 'Default Consensus'
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
@@ -83,11 +82,11 @@ class DefaultConsensus(Consensus):
         if np.sum(self.tm > 1.) > 0:
             self.is_tension=True
 
-
     def _update_parameters(self):
             '''
             For this consensus, combine the results of the provided interpretation
              modules to get a best estimate of the *cosmological* parameters.
+             Pick values from interpreter with lowest chi2
             '''
             chi2vec = [self.interpretations[i].chi2 for i in range(self.number_of_interpreters)]
             #ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0][0]
@@ -98,7 +97,7 @@ class DefaultConsensus(Consensus):
 
     def render_judgment(self):
         '''
-        If there is a tension and the reduced chi2 values are high, update systematics.
+        If the reduced chi2 values are high, update systematics, WHETHER OR NOT there is a tension.
         If there is a tension and they are low, change the cosmology model.
         '''
 
@@ -118,23 +117,20 @@ class DefaultConsensus(Consensus):
                 self.cosmology_judgment = True
 
 
-
         self._update_parameters()
                 #for i in range(self.number_of_interpreters):
                 #    self.cosmology_judgment[i] = True
 
 
 
-class ImpatientConsensus(Consensus):
-### Should this be an instance of Default Conensus to e.g. use its tension_metric function?
+class ImpatientConsensus(DefaultConsensus):
     '''
     same as default, but with patience parameter
     an instance of what used to be "sensible" (now deprecated)
     '''
 
-
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
-        super().__init__(interpretations = None )
+        super().__init__(interpretations = interpretations )
         self.name = 'Impatient Consensus'
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
@@ -145,42 +141,9 @@ class ImpatientConsensus(Consensus):
         self.chi2_dof_threshold = chi2_dof_threshold
         self.patience = patience
 
-
-    def tension_metric(self):
-        '''
-        Define what you think the default tension metric should be
-        '''
-        self.tm[0] = 0 #tension metric between others and the 0th interpreter.
-        # for each experiment get tension with the "chosen one."
-        for i, this_interp in enumerate(self.interpretations[1:]):
-
-            # difference between parameters inferred
-            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
-            # combination of covariance of parameters inferred
-            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
-
-            # chisq difference in matrix form
-
-            self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-        if np.sum(self.tm > 1.) > 0:
-            self.is_tension=True
-
-
-    def _update_parameters(self):
-        '''
-        For this consensus, combine the results of the provided interpretation
-         modules to get a best estimate of the *cosmological* parameters.
-        '''
-        chi2vec = [self.interpretations[i].chi2 for i in range(self.number_of_interpreters)]
-        #ind = np.where([chi2 ==   np.min(chi2vec) for chi2 in chi2vec])[0][0]
-        ind = np.argmin(chi2vec)
-
-        self.consensus_cosmological_parameters = self.interpretations[ind].best_fit_cosmological_parameters
-        self.consensus_parameter_covariance = self.interpretations[ind].best_fit_cosmological_parameter_covariance
-
     def render_judgment(self, number_of_tries = 0):
         '''
-        If there is a tension and the reduced chi2 values are high, update systematics.
+        If the reduced chi2 values are high, update systematics, WHETHER OR NOT there is a tension.
         If there is a tension and they are low, change the cosmology model.
         If the fits are not all good, but we've been updating systematics for too long, change the cosmology.
         '''
@@ -205,6 +168,35 @@ class ImpatientConsensus(Consensus):
         self._update_parameters()
                 #for i in range(self.number_of_interpreters):
                 #    self.cosmology_judgment[i] = True
+
+
+class TensionOnlyConsensus(ImpatientConsensus):
+    """
+    Same as ImpatientConsensus, but only update systematics if there IS a tension,
+    and ignore case where there are bad fits but no tension.
+    """
+
+    def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = None, chi2_dof_threshold = 1.25, patience = 10)
+        self.name = 'TensionOnly Consensus'
+        #pretty sure this is all you need to do.... and that code below could be updated accordingly... (BF)
+
+    def render_judgment(self,number_of_tries=0):
+
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+        if self.is_tension:
+            for i, this_interp in enumerate(self.interpretations):
+                if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                    self.systematics_judgment[i] = True
+            if all(chi2_list < self.chi2_dof_threshold):
+                self.cosmology_judgment = True
+
+        if (np.sum(self.systematics_judgment) > 0) and (number_of_tries > self.patience):
+            self.cosmology_judgment = True
+            self.systematics_judgment = [False]*len(self.interpretations)
+
+        self._update_parameters()
 
 
 class AlwaysBetOnMeConsensus(DefaultConsensus):
@@ -290,10 +282,10 @@ class MostlyBetOnMeConsensus(DefaultConsensus):
 
         for i, this_interp in enumerate(self.interpretations):
             if i == 0:
-                if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
             else:
-                if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
 
         if self.is_tension:
@@ -359,6 +351,9 @@ class AlwaysBetOnThemConsensus(DefaultConsensus):
 class MostlyBetOnThemConsensus(DefaultConsensus):
     '''
     Corollary to MostlyBetOnMeConsensus
+
+    All interpretations besides 0th have a higher error
+    tolerance so are less likely to update their systematics model
     '''
 
     def __init__(self, interprations, tolerance = 2, chi2_dof_threshold = 1.25):
@@ -373,7 +368,6 @@ class MostlyBetOnThemConsensus(DefaultConsensus):
         self.tm = np.zeros(len(interpretations))
         self.chi2_dof_threshold = chi2_dof_threshold
 
-
     def _update_parameters(self):
         '''
         For this consensus, combine the results of the provided interpretation
@@ -384,18 +378,12 @@ class MostlyBetOnThemConsensus(DefaultConsensus):
 
 
     def render_judgment(self, number_of_tries = 0):
-        if self.is_tension == True:
-            self.systematics_judgment[0] = True
-            for i in range(self.number_of_interpreters-1):
-                self.systematics_judgment[i+1] = False
-
-# TO DO: take into account chi2_dof_threshold as in MostlyBetOnMe
         '''
         Measure the tension among the provided interpretation objects
         Based on this result, issue instructions.
 
         see metric from above, decide if tension exists
-            interpreter 1 changes their model less often.
+            interpreter 1 changes their model more often.
         instruct both other interpreters to change systematics model if fits bad
             cosmology model updates if there is a tension and fits are good
         '''
@@ -404,10 +392,10 @@ class MostlyBetOnThemConsensus(DefaultConsensus):
 
         for i, this_interp in enumerate(self.interpretations):
             if i == 0:
-                if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
             else:
-                if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
 
         if self.is_tension:
@@ -460,6 +448,8 @@ class EveryoneIsWrongConsensus(DefaultConsensus):
 
 class ShiftThatParadigmConsensus(DefaultConsensus):
     '''
+    If there is a tension, everyone updates their cosmology.
+    Never tells interpreters to update systematics.
     '''
     def __init__(self, interprations):
         super().__init__()
@@ -473,9 +463,7 @@ class ShiftThatParadigmConsensus(DefaultConsensus):
 
 
     def render_judgment(self):
-        # Measure the tension among the provided interpretation objects
-        #  Based on this result, issue instructions.
-        # see metric from above, decide if tension exists
+        # see metric from DefaultConsensus, decide if tension exists
         # all interpreters change their cosmologies
 
         if self.is_tension == True:
@@ -486,6 +474,7 @@ class ShiftThatParadigmConsensus(DefaultConsensus):
 
 class UnderestimatedErrorConsensus(DefaultConsensus):
     '''
+    TO DO: What is this?
     '''
     def __init__(self, interprations):
         super().__init__()

@@ -4,7 +4,7 @@ import experiment
 import interpret
 import cosmology
 
-truth = cosmology.DampedDrivenOscillatorCosmology()
+truth = cosmology.ExponentialCosmology()
 experimental_parameters = {'times':np.linspace(0,7,500)}
 noise_parameters = np.array([.1])
 n_sys_coeff = 5
@@ -18,7 +18,7 @@ pendulum = experiment.SimplePendulumExperiment(cosmology=truth,
                                                noise_parameters = noise_parameters)
 pendulum.generate_data()
 
-model = cosmology.AiryCosmology()
+model = cosmology.DampedDrivenOscillatorVariableGCosmology()
 #noise_parameters = np.array([0.2])
 starting_systematics_parameters = np.zeros_like(true_systematics_parameters)
 
@@ -46,5 +46,5 @@ plt.plot(pendulum.times,pendulum.ideal_data_vector,'-.',label='true (ideal)',zor
 
 plt.legend(loc='best')
 plt.show()
-
+ipdb.set_trace()
 # Show the systematics.

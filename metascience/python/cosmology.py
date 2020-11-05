@@ -101,7 +101,7 @@ class StraightLineCosmology(Cosmology):
         return parameters
 
     def generate_model_data_vector(self,times,parameters):
-        slope = parameters[0]
+        slope = 1./parameters[0]
         intercept = parameters[1]
 
         # for now assuming a straight line with the intercept the nuisance parameter that isn't the cosmology
@@ -118,14 +118,14 @@ class ExponentialCosmology(Cosmology):
         self.name = 'exponential cosmology'
         self.n_parameters = self.n_cosmological + self.n_nuisance
         self.fiducial_cosmological_parameters = np.array([1.])
-        self.fiducial_nuisance_parameters = np.array([0.])
+        self.fiducial_nuisance_parameters = np.array([1.])
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
         return parameters
 
     def generate_model_data_vector(self,times,parameters):
-        timescale = parameters[0]
+        timescale = 1./parameters[0]
         amplitude = parameters[1]
 
         # for now assuming a straight line with the intercept the nuisance parameter that isn't the cosmology
@@ -164,7 +164,7 @@ class GaussianCosmology(Cosmology):
         self.name = "Gaussian function"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([.50]) # frequency
-        self.fiducial_nuisance_parameters = np.array([1.0,1.0, 1.0, 1.0]) # amplitude, phase
+        self.fiducial_nuisance_parameters = np.array([1.0,1.0, 1.0]) # amplitude, phase
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -177,9 +177,8 @@ class GaussianCosmology(Cosmology):
         constant_theta_0 = parameters[1]
         constant_gauss_amp = parameters[2]
         constant_phase = parameters[3]
-        constant_sigma = parameters[4]
 
-        model_data_vector = constant_theta_0 - constant_gauss_amp*np.exp(-(times-constant_phase)**2/2./constant_sigma**2)/np.sqrt(2*np.pi*constant_sigma**2)
+        model_data_vector = constant_theta_0 - constant_gauss_amp*np.exp(-constant_w**2*(times-constant_phase)**2/2.)/np.sqrt(2*np.pi*constant_sigma**2)
         return model_data_vector
 
 class BesselJCosmology(Cosmology):
@@ -236,6 +235,7 @@ class CosineCosmology(Cosmology):
 
 class DampedDrivenOscillatorCosmology(Cosmology):
     def __init__(self):
+        self.complexity = 2
         self.n_cosmological = 1
         self.n_nuisance = 6
         self.name = 'Damped-driven harmonic oscillator cosmology'
@@ -291,6 +291,7 @@ class DampedDrivenOscillatorCosmology(Cosmology):
 
 class DampedDrivenOscillatorVariableGCosmology(Cosmology):
     def __init__(self):
+        self.complexity = 3
         self.n_cosmological = 2
         self.n_nuisance = 6
         self.name = 'Damped-driven harmonic oscillator with position-dependent gravity cosmology'
