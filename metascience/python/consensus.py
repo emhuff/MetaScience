@@ -130,10 +130,11 @@ class ImpatientConsensus(DefaultConsensus):
     '''
 
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
-        super().__init__(interpretations = interpretations )
+        super().__init__(interpretations = interpretations)
         self.name = 'Impatient Consensus'
         self.chi2_dof_threshold = chi2_dof_threshold
         self.patience = patience
+<<<<<<< HEAD
 
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
@@ -141,6 +142,15 @@ class ImpatientConsensus(DefaultConsensus):
         self.number_of_interpreters = len(interpretations)
         self.is_tension = False
         self.tm = np.zeros(len(interpretations))
+=======
+>>>>>>> 0366e0b32b27f8843432f138240bd4ae066840c2
+
+#        self.interpretations = interpretations
+#        self.systematics_judgment = [False]*len(interpretations)
+#        self.cosmology_judgment = False
+#        self.number_of_interpreters = len(interpretations)
+#        self.is_tension = False
+#        self.tm = np.zeros(len(interpretations))
 
     def render_judgment(self, number_of_tries = 0):
         '''
@@ -178,7 +188,11 @@ class TensionOnlyConsensus(ImpatientConsensus):
     """
 
     def __init__(self, interpretations = None, chi2_dof_threshold = 1.25, patience = 10):
+<<<<<<< HEAD
         super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold, patience = patience)
+=======
+        super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
+>>>>>>> 0366e0b32b27f8843432f138240bd4ae066840c2
         self.name = 'TensionOnly Consensus'
         #pretty sure this is all you need to do.... and that code below could be updated accordingly... (BF)
 
