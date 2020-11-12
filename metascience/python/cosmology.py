@@ -178,7 +178,7 @@ class GaussianCosmology(Cosmology):
         constant_gauss_amp = parameters[2]
         constant_phase = parameters[3]
 
-        model_data_vector = constant_theta_0 - constant_gauss_amp*np.exp(-constant_w**2*(times-constant_phase)**2/2.)/np.sqrt(2*np.pi*constant_sigma**2)
+        model_data_vector = constant_theta_0 - constant_gauss_amp*np.exp(-constant_w**2*(times-constant_phase)**2/2.)/np.sqrt(2*np.pi/constant_w**2)
         return model_data_vector
 
 class BesselJCosmology(Cosmology):

@@ -346,6 +346,7 @@ class MostlyBetOnThemConsensus(ImpatientConsensus):
     def __init__(self, interprations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
         super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
         self.name = 'MostlyBetOnThem Consensus'
+        self.tolerance = tolerance
 
 
     def _update_parameters(self):
