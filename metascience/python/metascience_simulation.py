@@ -33,6 +33,8 @@ class Configuration():
         pass
 
 
+## Fix scope issues! Variables defined here are in same namespace as those in the top-level function.
+
 def run_consensus_compare(consensus_name, experiment_names, interpreter_names, interpreter_cosmologies,
                           true_cosmology, experimental_parameters, noise_parameters,max_iter = 1000,
                           number_of_systematics=1, true_systematics = np.array(0.0)):
@@ -93,7 +95,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
 
         if still_ok == False: break
         # Separate plotting function.
-        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters)
+        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, patience = 5)
         this_consensus.tension_metric()
         print(f"value of the tension parameter: {this_consensus.tm}")
         print(f"tension: {this_consensus.is_tension}")
@@ -113,7 +115,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
                 break
             this_cosmology = interpreter_cosmologies.pop()
             for i,interpreter in enumerate(interpreters):
-                starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
+                starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters] # note: not sure why we need to re-define but we do!
                 interpreters[i] = getattr(interpret,interpreter_names[i])(experiment = experiments[i], cosmology=this_cosmology,
                                                                           starting_systematics_parameters = starting_systematics_parameters[i],
                                                                           noise_parameters = noise_parameters[i])
@@ -152,8 +154,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     result.true_systematics = true_systematics
     result.consensus_cosmological_parameters = this_consensus.consensus_cosmological_parameters
     result.cosmological_parameter_names = this_cosmology.cosmological_parameter_names
-    result.nuisance_parameters = this_consensus.best_fit_nuisance_parameters
-    result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
+    #result.nuisance_parameters = this_consensus.best_fit_nuisance_parameters
+    #result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
     result.consensus_parameter_covariance = this_consensus.consensus_parameter_covariance
 
     return result
@@ -185,7 +187,7 @@ true_cosmology = 'CosineCosmology'
 for this_consensus in consensusize:
 
     result = run_consensus_compare(consensusize[0], experiment_names, interpreter_names, interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
-    results_file = f"{this_consensus.name}-results.pickle".replace(" ","_")
+    results_file = f"{this_consensus}-results.pickle".replace(" ","_")
     with open(results_file, 'wb') as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
