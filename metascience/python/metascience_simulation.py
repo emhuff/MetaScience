@@ -4,6 +4,8 @@ import experiment
 import interpret
 import cosmology
 import consensus
+import pickle
+import copy
 import ipdb
 
 # From inifile, read in:
@@ -26,13 +28,18 @@ class Results():
     def __init__(self):
         pass
 
+class Configuration():
+    def __init__(self):
+        pass
+
+
 def run_consensus_compare(consensus_name, experiment_names, interpreter_names, interpreter_cosmologies,
                           true_cosmology, experimental_parameters, noise_parameters,max_iter = 1000,
-                          number_of_systematics=1):
+                          number_of_systematics=1, true_systematics = np.array(0.0)):
     number_of_experiments = len(experiment_names)
     truth = getattr(cosmology, true_cosmology)()
     true_parameters = truth.get_parameter_set()
-    true_systematics_parameters = [np.array([.00])]*number_of_experiments
+    true_systematics_parameters = [true_systematics]*number_of_experiments
 
     if true_cosmology=='DampedDrivenOscillatorCosmology':
         true_parameters[3] = np.sqrt(12.)
@@ -47,7 +54,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     this_cosmology = interpreter_cosmologies.pop()
     n_systematics_parameters = [number_of_systematics for i in interpreter_names]
     starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
-    systematics_parameters = starting_systematics_parameters
+    systematics_parameters =  starting_systematics_parameters
 
     for i in range(number_of_experiments):
         experiments.append(getattr(experiment,experiment_names[i])(cosmology=truth,experimental_parameters=experimental_parameters[i],
@@ -106,6 +113,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
                 break
             this_cosmology = interpreter_cosmologies.pop()
             for i,interpreter in enumerate(interpreters):
+                starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
                 interpreters[i] = getattr(interpret,interpreter_names[i])(experiment = experiments[i], cosmology=this_cosmology,
                                                                           starting_systematics_parameters = starting_systematics_parameters[i],
                                                                           noise_parameters = noise_parameters[i])
@@ -131,20 +139,33 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     '''
     result = Results()
     result.consensus_name = consensus_name
+    result.experiment_names = experiment_names
+    result.true_cosmology = true_cosmology
+    result.interpreter_names = interpreter_names
+    result.interpreter_cosmologies = [thing.name for thing in interpreter_cosmologies]
+    result.experimental_parameters = experimental_parameters
+    result.noise_parameters = noise_parameters
     result.converged = converged
     result.iterations = iter
-    result.final_cosmology = this_cosmology
+    result.final_cosmology = this_cosmology.name
     result.final_tension_metric = this_consensus.tm
-    result.consensus_parameters = this_consensus.consensus_cosmological_parameters
+    result.true_systematics = true_systematics
+    result.consensus_cosmological_parameters = this_consensus.consensus_cosmological_parameters
+    result.cosmological_parameter_names = this_cosmology.cosmological_parameter_names
+    result.nuisance_parameters = this_consensus.best_fit_nuisance_parameters
+    result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
     result.consensus_parameter_covariance = this_consensus.consensus_parameter_covariance
 
     return result
 
 
 
-consensusize = ['ImpatientConsensus', 'ImpatientConsensus']
+consensusize = ['ImpatientConsensus', 'MostlyBetOnMeConsensus']
+
 experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
 noise_parameters = [np.array([0.03]), np.array([0.1])]
+n_true_sys = 5
+true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
 number_of_consensus = len(consensusize)
 
 experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
@@ -153,9 +174,28 @@ number_of_interpreters=len(interpreter_names)
 interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
                cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
                cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
-true_cosmology = 'DampedDrivenOscillatorCosmology'
+
+interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
+
+#true_cosmology = 'DampedDrivenOscillatorCosmology'
+true_cosmology = 'CosineCosmology'
 
 # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
-result = run_consensus_compare(consensusize[0], experiment_names, interpreter_names, interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters)
+
+for this_consensus in consensusize:
+
+    result = run_consensus_compare(consensusize[0], experiment_names, interpreter_names, interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
+    results_file = f"{this_consensus.name}-results.pickle".replace(" ","_")
+    with open(results_file, 'wb') as f:
+        # Pickle the 'data' dictionary using the highest protocol available.
+        pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
 
 ipdb.set_trace()
+
+# To read:
+'''
+with open('data.pickle', 'rb') as f:
+    # The protocol version used is detected automatically, so we do not
+    # have to specify it.
+    data = pickle.load(f)
+'''

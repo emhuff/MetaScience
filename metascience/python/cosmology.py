@@ -94,7 +94,9 @@ class StraightLineCosmology(Cosmology):
         self.name = 'straight-line cosmology'
         self.n_parameters = self.n_cosmological + self.n_nuisance
         self.fiducial_cosmological_parameters = np.array([1.])
+        self.cosmological_parameter_names = ['inverse slope']
         self.fiducial_nuisance_parameters = np.array([0.])
+        self.nuisance_parameter_names = ['intercept']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -118,7 +120,9 @@ class ExponentialCosmology(Cosmology):
         self.name = 'exponential cosmology'
         self.n_parameters = self.n_cosmological + self.n_nuisance
         self.fiducial_cosmological_parameters = np.array([1.])
+        self.cosmological_parameter_names = ['inverse decay time of exponential']
         self.fiducial_nuisance_parameters = np.array([1.])
+        self.nuisance_parameter_names = ['amplitude']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -140,7 +144,9 @@ class AiryCosmology(Cosmology):
         self.name = "Airy function cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([.50]) # frequency
+        self.cosmological_parameter_names = ['frequency of Airy function']
         self.fiducial_nuisance_parameters = np.array([1.0,.0]) # amplitude, phase
+        self.nuisance_parameter_names = ['amplitude','phase']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -163,8 +169,10 @@ class GaussianCosmology(Cosmology):
         self.n_nuisance = 4
         self.name = "Gaussian function"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([.50]) # frequency
-        self.fiducial_nuisance_parameters = np.array([1.0,1.0, 1.0]) # amplitude, phase
+        self.fiducial_cosmological_parameters = np.array([.50])
+        self.cosmological_parameter_names = ['inverse width of gaussian']
+        self.fiducial_nuisance_parameters = np.array([1.0,1.0, 1.0])
+        self.nuisance_parameter_names = ['constant offset','amplitude','phase']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -189,7 +197,9 @@ class BesselJCosmology(Cosmology):
         self.name = "BesselJ cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([.50]) # frequency
+        self.cosmological_parameter_names = ['frequency of oscillator']
         self.fiducial_nuisance_parameters = np.array([1.0,.0]) # amplitude, phase
+        self.nuisance_parameter_names = ['amplitude of oscillator', 'phase of oscillator']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -215,7 +225,9 @@ class CosineCosmology(Cosmology):
         self.name = "Cosine cosmology"
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([.50]) # frequency
+        self.cosmological_parameter_names = ['frequency of oscillator']
         self.fiducial_nuisance_parameters = np.array([2.0,.0]) # amplitude, phase
+        self.nuisance_parameter_names = ['Amplitude of oscillator', 'phase of oscillator']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -241,8 +253,10 @@ class DampedDrivenOscillatorCosmology(Cosmology):
         self.name = 'Damped-driven harmonic oscillator cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0]) # w
+        self.cosmological_parameter_names = ['oscillator frequency']
         self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
 #        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
+        self.nuisance_parameter_names = ['drag','driver amplitude','driver frequency','driver phase','oscillator initial position','oscillator initial velocity']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -254,13 +268,13 @@ class DampedDrivenOscillatorCosmology(Cosmology):
         Generate ideal data vector from cosmology parameters, nuisance
         parameters, and experimental parameters
         '''
-        w = parameters[0]
-        c = parameters[1]
+        w = parameters[0] # frequency of oscillator
+        c = parameters[1] # drag parameter
         A = parameters[2] # amplitude of driver
         wd = parameters[3] # frequency of driver
         phid = parameters[4] # phase of driver
-        theta_x0 = parameters[5]
-        theta_v0 = parameters[6]
+        theta_x0 = parameters[5] # initial position of oscillator
+        theta_v0 = parameters[6] # initial velocity of oscillator
 
         #theta = self.constant_theta_0 *
         #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
@@ -297,8 +311,10 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
         self.name = 'Damped-driven harmonic oscillator with position-dependent gravity cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0, 0.0]) # w
+        self.cosmological_parameter_names = ['frequency of osciallator', 'height-dependence of oscillator frequency']
         self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
 #        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
+        self.nuisance_parameter_names = ['drag','driver amplitude','driver frequency','driver phase','oscillator initial position','oscillator initial velocity']
 
     def get_parameter_set(self):
         parameters = np.concatenate([self.fiducial_cosmological_parameters,self.fiducial_nuisance_parameters])
@@ -312,12 +328,12 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
         '''
         w0 = parameters[0] # frequency of oscillator at midpoint
         wa = parameters[1] # change in frequency of oscillator with angle theta
-        c = parameters[2]
+        c = parameters[2] # drag coefficient
         A = parameters[3] # amplitude of driver
         wd = parameters[4] # frequency of driver
         phid = parameters[5] # phase of driver
-        theta_x0 = parameters[6]
-        theta_v0 = parameters[7]
+        theta_x0 = parameters[6] # initial position of oscillator
+        theta_v0 = parameters[7] # initial velocity of oscillator
 
         #theta = self.constant_theta_0 *
         #    np.cos(np.sqrt(self.constant_g] / self.constant_l) * self.times)
