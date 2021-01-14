@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import scipy
 #import cosmology ???
+import ipdb
 
 class ExperimentInterpreter(metaclass=ABCMeta):
     def __init__(self):
@@ -197,6 +198,30 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             else:
                 return chi#_with_prior
 
+        def _Fisher_covariance(log_likelihood, parameters, step_size = 0.01):
+            dL = np.zeros((parameters.size, parameters.size)) # Second derivatives of the likelihood function.
+            for iparam in range(parameters.size):
+                for jparam in range(parameters.size):
+                    p1p1 = parameters.copy()
+                    p1p1[iparam] = p1p1[iparam] + step_size
+                    p1p1[jparam] = p1p1[jparam] + step_size
+                    m1m1 = parameters.copy()
+                    m1m1[iparam] = m1m1[iparam] - step_size
+                    m1m1[jparam] = m1m1[iparam] - step_size
+                    p1m1 = parameters.copy()
+                    p1m1[iparam] = p1m1[iparam] + step_size
+                    p1m1[jparam] = p1m1[jparam] - step_size
+                    m1p1 = parameters.copy()
+                    m1p1[iparam] = m1p1[iparam] - step_size
+                    m1p1[jparam] = m1p1[jparam] - step_size
+                    fp1p1 = log_likelihood(p1p1,return_chisq=True)
+                    fp1m1 = log_likelihood(p1m1,return_chisq=True)
+                    fm1p1 = log_likelihood(m1p1,return_chisq=True)
+                    fm1m1 = log_likelihood(m1m1,return_chisq=True)
+                    # dL is derivative of the log-likelihood with respect to param_i and param_i
+                    dL[iparam,jparam] = (fm1m1 + fp1p1 - fp1m1 - fm1p1 ) * 1./ (4*step_size**2)
+            C =  np.linalg.inv(dL)
+            return C
 
         # generate a guess in the right order.
         guess = np.concatenate([self.cosmology.fiducial_cosmological_parameters,self.cosmology.fiducial_nuisance_parameters,self.starting_systematics_parameters])
@@ -229,7 +254,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
             print(f"fit failed to coverge because: {best_fit_parameters.message} ")
             print('covariance is None: setting to -1')
-
+        altcov = _Fisher_covariance(evaluate_logL,best_fit_parameters.x)
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
 

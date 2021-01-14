@@ -84,7 +84,7 @@ class DefaultConsensus(Consensus):
                 this_diff = samples[j,:]
                 logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-            tm_thresh = np.percentile(logL,95)
+            tm_thresh = np.percentile(logL,99.9)
             print(f"tension metric threshold: {tm_thresh}")
         if np.sum(self.tm > tm_thresh) > 0:
             self.is_tension=True
@@ -457,26 +457,64 @@ class ShiftThatParadigmConsensus(DefaultConsensus):
 
 class UnderestimatedErrorConsensus(DefaultConsensus):
     '''
-    TO DO: What is this?
+    TO DO: Deveop a consensus model that only thinks tensions can be solved by
+    increasing the magnitude of the errors.
+    If there is a tension:
+        1. Figure out how large the errors (of all interpreters?) need to be
+        in order to solve the tension.
+            which interpreters? for now, all of them with same fractional amount
+        2. Determine if this increase is "reasonable" or too large
+            increase errors by a maximum fraction, between 5 and 10?
+        3. If the proposed error increase is too large, direct interpreters
+        to update the cosmology.
+    Subject to change... note that as written this consensus would never tell
+    interpreters to update their systematics models...
     '''
+
     def __init__(self, interprations):
         super().__init__()
         self.name = 'UnderestimatedError Consensus'
+        self.max_err_increase = 10 #maximum fraction of error increase allowed
+
+    def tension_metric(self):
+        '''
+        The below is the tension_metric as defined in DefaultConsensus class... which we need to change to implement the above?
+        We need this to determine the fractional error increase that would solve the tension
+        To start, increase errors for all interpreters by same fractional amount
+        '''
+        self.tm[0] = 0 #tension metric between others and the 0th interpreter.
+        # for each experiment get tension with the "chosen one."
+        for i, this_interp in enumerate(self.interpretations[1:]):
+
+            # difference between parameters inferred
+            diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
+            # combination of covariance of parameters inferred
+            joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
+
+            # chisq difference in matrix form
+            nsample = 10000
+            samples = np.random.multivariate_normal(mean=np.zeros(this_interp.best_fit_cosmological_parameters.size),cov=joint_sum_cov,size=nsample)
+            logL = np.zeros(nsample)
+            for j in range(nsample):
+                this_diff = samples[j,:]
+                logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
+            self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
+            tm_thresh = np.percentile(logL,99.9)
+            print(f"tension metric threshold: {tm_thresh}")
+        if np.sum(self.tm > tm_thresh) > 0:
+            self.is_tension=True
+
 
     def render_judgment(self):
 
 
-        # Measure the tension among the provided interpretation objects
-        # Based on this result, issue instructions.
-        # see metric from above, decide if tension exists
-        # All interpeters increase their errorbars
-
-        # Q: should we make this one a me vs you as well?
 
         if self.is_tension == True:
-            print('code this')
-        pass
+            # determine how much to increase errors in order to solve tension... here?
+            # then compare err_increase to max_err_increase
+            # if err_increase >= max_err_increase: cosmology_judgment = True
 
+        self._update_parameters()
 
 
 class SeminarConsensus(DefaultConsensus):

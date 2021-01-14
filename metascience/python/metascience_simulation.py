@@ -37,12 +37,28 @@ class Configuration():
     def __init__(self):
         pass
 
+def plot_fits(filename,experiments,interpreters):
+    # Plot the fits at each iteration
+    fig,ax = plt.subplots(figsize=(7,7))
+    for i in range(len(experiments)):
+        ax.plot(experiments[i].times,experiments[i].observed_data_vector,label=f'data {i}',marker='.')
+        ax.plot(interpreters[i].times,interpreters[i].best_fit_observed_model,label=f'model {i}')
+        ax.plot(interpreters[i].times,interpreters[i].best_fit_ideal_model,label=f'ideal {i}',linestyle='--')
+    ax.legend(loc='best')
+    fig.savefig(filename)
+    plt.close(fig)
 
 ## Fix scope issues! Variables defined here are in same namespace as those in the top-level function.
 
 def run_consensus_compare(consensus_name, experiment_names, interpreter_names, interpreter_cosmologies,
                           true_cosmology, experimental_parameters, noise_parameters,max_iter = 1000,
                           number_of_systematics=1, true_systematics = np.array(0.0)):
+    '''
+    loops over experiments, and fits models to it.
+    compare paraemeters models via a tension tension_metric; look at goodnesses of fit amongst
+    multiple avenues (...)
+    then update the systematics or cosmology model
+    '''
     number_of_experiments = len(experiment_names)
     truth = getattr(cosmology, true_cosmology)()
     true_parameters = truth.get_parameter_set()
@@ -78,6 +94,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     still_ok = True
     systematics_iter = np.zeros(number_of_experiments)
     converged = False
+    # each interpreter fits a model (like different cosmic probes)
+    # testing different consensus rules
     for iter in range(max_iter):
         print(f"------------------------------")
         print(f"Iteration {iter}:")
@@ -99,12 +117,14 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
             print(f"fit chi2/dof: {interpreter.chi2/interpreter.measured_data_vector.size}")
 
         if still_ok == False: break
-        # Separate plotting function.
+
+        plot_fits(filename=f"{consensus_name}_iter-{iter:03}.png",experiments = experiments,interpreters = interpreters)
+
         this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, patience = 5)
         this_consensus.tension_metric()
         print(f"value of the tension parameter: {this_consensus.tm}")
         print(f"tension: {this_consensus.is_tension}")
-        this_consensus.render_judgment(number_of_tries = np.max(systematics_iter))
+        this_consensus.render_judgment(number_of_tries = np.max(systematics_iter)) #render judgment
 
         if np.max(systematics_iter) > this_consensus.patience:
             print(f"Got tired of further refining experiments after {this_consensus.patience} iterations. Changing the cosmology")
@@ -187,7 +207,8 @@ if __name__ == '__main__':
     interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
 
     #true_cosmology = 'DampedDrivenOscillatorCosmology'
-    true_cosmology = 'CosineCosmology'
+    #true_cosmology = 'CosineCosmology'
+    true_cosmology = 'StraightLineCosmology'
 
     # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
 
