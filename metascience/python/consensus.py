@@ -77,9 +77,16 @@ class DefaultConsensus(Consensus):
             joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + this_interp.best_fit_cosmological_parameter_covariance)
 
             # chisq difference in matrix form
-
+            nsample = 10000
+            samples = np.random.multivariate_normal(mean=np.zeros(this_interp.best_fit_cosmological_parameters.size),cov=joint_sum_cov,size=nsample)
+            logL = np.zeros(nsample)
+            for j in range(nsample):
+                this_diff = samples[j,:]
+                logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-        if np.sum(self.tm > 1.) > 0:
+            tm_thresh = np.percentile(logL,95)
+            print(f"tension metric threshold: {tm_thresh}")
+        if np.sum(self.tm > tm_thresh) > 0:
             self.is_tension=True
 
     def _update_parameters(self):

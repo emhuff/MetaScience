@@ -27,6 +27,11 @@ import ipdb
 class Results():
     def __init__(self):
         pass
+    def __getstate__(self):
+        return self.__dict__
+    def __setstate__(self, d):
+        self.__dict__ = d
+
 
 class Configuration():
     def __init__(self):
@@ -145,6 +150,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     result.true_cosmology = true_cosmology
     result.interpreter_names = interpreter_names
     result.interpreter_cosmologies = [thing.name for thing in interpreter_cosmologies]
+    result.data_chi2 = [thing.chi2 for thing in interpreters]
     result.experimental_parameters = experimental_parameters
     result.noise_parameters = noise_parameters
     result.converged = converged
@@ -161,38 +167,39 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     return result
 
 
+if __name__ == '__main__':
 
-consensusize = ['ImpatientConsensus', 'MostlyBetOnMeConsensus']
+    consensusize = ['ImpatientConsensus', 'MostlyBetOnMeConsensus']
 
-experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
-noise_parameters = [np.array([0.03]), np.array([0.1])]
-n_true_sys = 5
-true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
-number_of_consensus = len(consensusize)
+    experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
+    experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
+    noise_parameters = [np.array([0.03]), np.array([0.1])]
+    n_true_sys = 5
+    true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
+    number_of_consensus = len(consensusize)
 
-experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
-interpreter_names = ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
-number_of_interpreters=len(interpreter_names)
-interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
+    interpreter_names = ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
+    number_of_interpreters=len(interpreter_names)
+    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
                cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
                cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
 
-interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
+    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
 
-#true_cosmology = 'DampedDrivenOscillatorCosmology'
-true_cosmology = 'CosineCosmology'
+    #true_cosmology = 'DampedDrivenOscillatorCosmology'
+    true_cosmology = 'CosineCosmology'
 
-# TODO: wrap this in a loop that stores and (maybe?) visualizes results.
+    # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
 
-for this_consensus in consensusize:
+    for this_consensus in consensusize:
+        these_interpreter_cosmologies = interpreter_cosmologies.copy()
+        result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
+        results_file = f"{this_consensus}-results.pickle".replace(" ","_")
+        with open(results_file, 'wb') as f:
+            # Pickle the 'data' dictionary using the highest protocol available.
+            pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
 
-    result = run_consensus_compare(consensusize[0], experiment_names, interpreter_names, interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
-    results_file = f"{this_consensus}-results.pickle".replace(" ","_")
-    with open(results_file, 'wb') as f:
-        # Pickle the 'data' dictionary using the highest protocol available.
-        pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
-
-ipdb.set_trace()
+    ipdb.set_trace()
 
 # To read:
 '''
