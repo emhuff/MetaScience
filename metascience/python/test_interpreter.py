@@ -4,9 +4,9 @@ import experiment
 import interpret
 import cosmology
 
-truth = cosmology.ExponentialCosmology()
+truth = cosmology.CosineCosmology()
 experimental_parameters = {'times':np.linspace(0,7,500)}
-noise_parameters = np.array([.1])
+noise_parameters = np.array([.5])
 n_sys_coeff = 5
 true_systematics_parameters = .1/(np.arange(n_sys_coeff)+1) * np.random.randn(n_sys_coeff)
 true_parameters = truth.get_parameter_set()
@@ -18,7 +18,7 @@ pendulum = experiment.SimplePendulumExperiment(cosmology=truth,
                                                noise_parameters = noise_parameters)
 pendulum.generate_data()
 
-model = cosmology.DampedDrivenOscillatorVariableGCosmology()
+model = cosmology.CosineCosmology()
 #noise_parameters = np.array([0.2])
 starting_systematics_parameters = np.zeros_like(true_systematics_parameters)
 

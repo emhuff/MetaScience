@@ -469,18 +469,21 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
         to update the cosmology.
     Subject to change... note that as written this consensus would never tell
     interpreters to update their systematics models...
+
+    As a reminder: the scripts call consensus.tension_metric, then print out
+    consensus.tm and consensus.is_tension, then call consensus.render_judgment.
     '''
 
     def __init__(self, interprations):
         super().__init__()
         self.name = 'UnderestimatedError Consensus'
+        self.tm_thresh = np.zeros(len(interpretations))
         self.max_err_increase = 10 #maximum fraction of error increase allowed
+        self.err_increase = np.ones(len(interpretations)) # variable we will iterate over
 
     def tension_metric(self):
         '''
-        The below is the tension_metric as defined in DefaultConsensus class... which we need to change to implement the above?
-        We need this to determine the fractional error increase that would solve the tension
-        To start, increase errors for all interpreters by same fractional amount
+        The below is the tension_metric as defined in DefaultConsensus class... (as of January 2021)
         '''
         self.tm[0] = 0 #tension metric between others and the 0th interpreter.
         # for each experiment get tension with the "chosen one."
@@ -499,20 +502,50 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
                 this_diff = samples[j,:]
                 logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-            tm_thresh = np.percentile(logL,99.9)
-            print(f"tension metric threshold: {tm_thresh}")
-        if np.sum(self.tm > tm_thresh) > 0:
+            self.tm_thresh = np.percentile(logL,99.9)
+            print(f"tension metric threshold: {self.tm_thresh}")
+        if np.sum(self.tm > self.tm_thresh) > 0:
             self.is_tension=True
 
 
     def render_judgment(self):
-
-
+        '''
+        If there is a tension as determined by tension_metric,
+          iteratively increase all errors (interpretations.best_fit_cosmological_parameter_covariance ??)
+          and recompute self.tm (call tension_metric within this function?)
+          until self.is_tension = False.
+        Then compare err_increase to max_err_increase (defined in init, or passed as argument to this function?)
+          and if err_increase >= max_err_increase: cosmology_judgment = True,
+          otherwise, report the required increase in some way...
+          (We don't have a mechanism to tell interpreters to "increase errors by X factor" yet.)
+        '''
 
         if self.is_tension == True:
             # determine how much to increase errors in order to solve tension... here?
             # then compare err_increase to max_err_increase
             # if err_increase >= max_err_increase: cosmology_judgment = True
+            temp_tm = self.tm
+            temp_thresh = self.tm_thresh
+            #loop through...
+            biasfactor = 0
+            while np.sum(temp_tm > temp_thresh) > 0:
+                biasfactor += 0.1
+                for i, this_interp in enumerate(self.interpretations[1:]):
+                    diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
+                    joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + (1+biasfactor)*this_interp.best_fit_cosmological_parameter_covariance)
+                    # chisq difference in matrix form
+                    nsample = 10000
+                    samples = np.random.multivariate_normal(mean=np.zeros(this_interp.best_fit_cosmological_parameters.size),cov=joint_sum_cov,size=nsample)
+                    logL = np.zeros(nsample)
+                    for j in range(nsample):
+                        this_diff = samples[j,:]
+                        logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
+                    temp_tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
+                    temp_thresh = np.percentile(logL,99.9)
+                        print(f"tension metric threshold: {temp_thresh} for biasfactor of {biasfactor}")
+#            else:
+             print(f"bias factor {biasfactor} resolves the tension!")
+
 
         self._update_parameters()
 

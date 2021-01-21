@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 #import cosmology ???
 import ipdb
+import matplotlib.pyplot as plt
 
 class ExperimentInterpreter(metaclass=ABCMeta):
     def __init__(self):
@@ -198,29 +199,49 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             else:
                 return chi#_with_prior
 
-        def _Fisher_covariance(log_likelihood, parameters, step_size = 0.01):
-            dL = np.zeros((parameters.size, parameters.size)) # Second derivatives of the likelihood function.
+        def _Fisher_covariance(log_likelihood, parameters, step_size = 0.01,check=False):
+
+            def eval_model(parameters):
+                model_data_vector = self.cosmology.generate_model_data_vector(self.times,parameters[:self.cosmology.n_parameters])
+                model_with_systematics = self._add_systematics(model_data_vector,parameters = parameters[self.cosmology.n_parameters:])
+                return model_with_systematics
+
+            param_derivs = np.zeros((self.times.size,parameters.size)) # Derivatives of the model wrt to the parameters
+            for iparam in range(parameters.size):
+                param_p = parameters.copy()
+                param_p[iparam] = param_p[iparam] + step_size * parameters[iparam]
+                dmp = eval_model(param_p)
+                param_m = parameters.copy()
+                param_m[iparam] = param_m[iparam] - step_size * parameters[iparam]
+                dmm = eval_model(param_m)
+                param_derivs[:,iparam] = (dmp - dmm) / (2*step_size*parameters[iparam])
+
+            Fisher = np.zeros((parameters.size,parameters.size))
             for iparam in range(parameters.size):
                 for jparam in range(parameters.size):
-                    p1p1 = parameters.copy()
-                    p1p1[iparam] = p1p1[iparam] + step_size
-                    p1p1[jparam] = p1p1[jparam] + step_size
-                    m1m1 = parameters.copy()
-                    m1m1[iparam] = m1m1[iparam] - step_size
-                    m1m1[jparam] = m1m1[iparam] - step_size
-                    p1m1 = parameters.copy()
-                    p1m1[iparam] = p1m1[iparam] + step_size
-                    p1m1[jparam] = p1m1[jparam] - step_size
-                    m1p1 = parameters.copy()
-                    m1p1[iparam] = m1p1[iparam] - step_size
-                    m1p1[jparam] = m1p1[jparam] - step_size
-                    fp1p1 = log_likelihood(p1p1,return_chisq=True)
-                    fp1m1 = log_likelihood(p1m1,return_chisq=True)
-                    fm1p1 = log_likelihood(m1p1,return_chisq=True)
-                    fm1m1 = log_likelihood(m1m1,return_chisq=True)
-                    # dL is derivative of the log-likelihood with respect to param_i and param_i
-                    dL[iparam,jparam] = (fm1m1 + fp1p1 - fp1m1 - fm1p1 ) * 1./ (4*step_size**2)
-            C =  np.linalg.inv(dL)
+                    Fisher[iparam,jparam] = param_derivs[:,iparam].dot(self.inverse_covariance).dot(param_derivs[:,jparam])
+            C = np.linalg.inv(Fisher)
+            if check:
+                npts = 250
+                param_range = np.linspace( parameters[0] - 5*np.sqrt(1./Fisher[0,0]), parameters[0] + 5*np.sqrt(1./Fisher[0,0]), npts )
+                L = np.zeros(npts)
+                for i in range(npts):
+                    this_params = parameters.copy()
+                    this_params[0] = param_range[i]
+                    L[i] = evaluate_logL(this_params,return_chisq=True)
+
+                fig,ax = plt.subplots()
+                best_param = param_range[np.argmin(L)]
+                ax.plot(param_range,np.exp(-L + np.min(L) )*1./np.sqrt(2*np.pi*1./Fisher[0,0]))
+                ax.axvline(parameters[0] - np.sqrt(1./Fisher[0,0]),color='red',linestyle='--')
+                ax.axvline(best_param,color='black',linestyle='--',label='maxL param')
+                ax.axvline(parameters[0],color='cyan',linestyle='--',label='best-fit param')
+                ax.axvline(parameters[0] + np.sqrt(1./Fisher[0,0]),color='red',linestyle='--')
+                ax.set_xlabel('parameter 0')
+                ax.set_ylabel('likelihood')
+                ax.legend(loc='best')
+                plt.savefig('likelihood_check_plot.png')
+                plt.close(fig)
             return C
 
         # generate a guess in the right order.
@@ -254,10 +275,9 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
             print(f"fit failed to coverge because: {best_fit_parameters.message} ")
             print('covariance is None: setting to -1')
-        altcov = _Fisher_covariance(evaluate_logL,best_fit_parameters.x)
+        self.best_fit_cosmological_parameter_covariance = _Fisher_covariance(evaluate_logL,best_fit_parameters.x,check=False)
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
-
 
 
 
