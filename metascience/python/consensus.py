@@ -478,8 +478,7 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
         super().__init__()
         self.name = 'UnderestimatedError Consensus'
         self.tm_thresh = np.zeros(len(interpretations))
-        self.max_err_increase = 10 #maximum fraction of error increase allowed
-        self.err_increase = np.ones(len(interpretations)) # variable we will iterate over
+        self.max_bias = 10 #maximum fraction of error increase allowed
 
     def tension_metric(self):
         '''
@@ -532,7 +531,7 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
                 biasfactor += 0.1
                 for i, this_interp in enumerate(self.interpretations[1:]):
                     diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
-                    joint_sum_cov = (self.interpretations[0].best_fit_cosmological_parameter_covariance + (1+biasfactor)*this_interp.best_fit_cosmological_parameter_covariance)
+                    joint_sum_cov = ((1+biasfactor)*self.interpretations[0].best_fit_cosmological_parameter_covariance + (1+biasfactor)*this_interp.best_fit_cosmological_parameter_covariance)
                     # chisq difference in matrix form
                     nsample = 10000
                     samples = np.random.multivariate_normal(mean=np.zeros(this_interp.best_fit_cosmological_parameters.size),cov=joint_sum_cov,size=nsample)
@@ -545,6 +544,18 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
                         print(f"tension metric threshold: {temp_thresh} for biasfactor of {biasfactor}")
 #            else:
              print(f"bias factor {biasfactor} resolves the tension!")
+
+
+            if biasfactor > self.max_bias:
+                print(f"error increase that solves tension is way too much; updating cosmology")
+                self.cosmology_judgment = True
+            else:
+                print(f"No tension if you increase parameter covariance by factor of {biasfactor}. Yay!")
+                print("Updating interpreters.best_fit_cosmological_parameter_covariance accordingly")
+                interpeters[:].best_fit_cosmological_parameter_covariance = interpeters[:].best_fit_cosmological_parameter_covariance*(1+biasfactor)
+                # this means in the next call to tension_metric it will use new covariance and find no tension hopefully
+                self.is_tension = False
+                self.tm = temp_tm
 
 
         self._update_parameters()
