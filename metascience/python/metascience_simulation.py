@@ -189,7 +189,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
 
 if __name__ == '__main__':
 
-    consensusize = ['ImpatientConsensus', 'MostlyBetOnMeConsensus']
+    consensusize = ['UnderestimatedErrorConsensus']#, 'MostlyBetOnMeConsensus']
 
     experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
@@ -208,7 +208,7 @@ if __name__ == '__main__':
 
     #true_cosmology = 'DampedDrivenOscillatorCosmology'
     #true_cosmology = 'CosineCosmology'
-    true_cosmology = 'StraightLineCosmology'
+    true_cosmology = 'CosineCosmology'
 
     # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
 
