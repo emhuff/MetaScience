@@ -275,8 +275,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
             print(f"fit failed to coverge because: {best_fit_parameters.message} ")
             print('covariance is None: setting to -1')
+        # removing the Fisher for now to test the consensu module that blows up errors
         fullcov = _Fisher_covariance(evaluate_logL,best_fit_parameters.x,check=True)
-        self.best_fit_cosmological_parameter_covariance = fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+        #print(fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological])
+        #print('huh covariance')
+        #print(self.best_fit_cosmological_parameter_covariance)
+        #self.best_fit_cosmological_parameter_covariance = fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
 

@@ -189,7 +189,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
 
 if __name__ == '__main__':
 
-    consensusize = ['UnderestimatedErrorConsensus']#, 'MostlyBetOnMeConsensus']
+    consensusize = ['UnderestimatedErrorConsensus']
+    #consensusize = ['MostlyBetOnMeConsensus']
 
     experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
@@ -204,11 +205,16 @@ if __name__ == '__main__':
                cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
                cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
 
-    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
+    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
+               cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
+               cosmology.CosineCosmology()]#,cosmology.StraightLineCosmology()]
 
-    #true_cosmology = 'DampedDrivenOscillatorCosmology'
+#    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
+#    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(), cosmology.CosineCosmology()]
+
+    true_cosmology = 'DampedDrivenOscillatorCosmology'
+    print(f"The true cosmology is {true_cosmology}, ok buddy get wild")
     #true_cosmology = 'CosineCosmology'
-    true_cosmology = 'CosineCosmology'
 
     # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
 

@@ -84,7 +84,7 @@ class DefaultConsensus(Consensus):
                 this_diff = samples[j,:]
                 logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
             self.tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-            tm_thresh = np.percentile(logL,99.9)
+            tm_thresh = np.percentile(logL,99.9)#/100. # RH manually made the threshold small
             print(f"tension metric threshold: {tm_thresh}")
         if np.sum(self.tm > tm_thresh) > 0:
             self.is_tension=True
@@ -478,7 +478,7 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
         super().__init__(interpretations = interpretations)
         self.name = 'UnderestimatedError Consensus'
         self.tm_thresh = np.zeros(len(interpretations))
-        self.max_bias = 10 #maximum fraction of error increase allowed
+        self.max_bias = 1 #maximum fraction of error increase allowed
         self.patience = patience
 
     def render_judgment(self, number_of_tries = None):
@@ -499,9 +499,10 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
             # if err_increase >= max_err_increase: cosmology_judgment = True
             temp_tm = self.tm
             temp_thresh = self.tm_thresh
+
             #loop through...
             biasfactor = 0
-            while np.sum(temp_tm > temp_thresh) > 0:
+            while ((np.sum(temp_tm > temp_thresh) > 0) and (biasfactor <= self.max_bias)):
                 biasfactor += 0.1
                 for i, this_interp in enumerate(self.interpretations[1:]):
                     diff_vec = self.interpretations[0].best_fit_cosmological_parameters - this_interp.best_fit_cosmological_parameters
@@ -514,18 +515,19 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
                         this_diff = samples[j,:]
                         logL[j] = np.matmul(np.matmul(np.transpose(this_diff), np.linalg.inv(joint_sum_cov)), this_diff)
                     temp_tm[i+1] = np.matmul(np.matmul(np.transpose(diff_vec), np.linalg.inv(joint_sum_cov)), diff_vec)
-                    temp_thresh = np.percentile(logL,99.9)
-                    print(f"tension metric threshold: {temp_thresh} for biasfactor of {biasfactor}")
-            print(f"bias factor {biasfactor} resolves the tension!")
+                    temp_thresh = np.percentile(logL,99.9) #/100. # RH changed this by hand
+                    print(f"tension metric: {temp_tm} for biasfactor of {biasfactor}")
+            print(f"bias factor {biasfactor} either resolves the tension or is too high compared to the max threshold {self.max_bias}!")
 
 
-            if biasfactor > self.max_bias:
+            if (biasfactor > self.max_bias):
                 print(f"error increase that solves tension is way too much; updating cosmology")
                 self.cosmology_judgment = True
             else:
                 print(f"No tension if you increase parameter covariance by factor of {biasfactor}. Yay!")
                 print("Updating interpreters.best_fit_cosmological_parameter_covariance accordingly")
-                interpeters[:].best_fit_cosmological_parameter_covariance = interpeters[:].best_fit_cosmological_parameter_covariance*(1+biasfactor)
+                for interpreter in self.interpretations:
+                    interpreter.best_fit_cosmological_parameter_covariance = interpreter.best_fit_cosmological_parameter_covariance*(1+biasfactor)
                 # this means in the next call to tension_metric it will use new covariance and find no tension hopefully
                 self.is_tension = False
                 self.tm = temp_tm
