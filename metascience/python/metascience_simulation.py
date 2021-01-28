@@ -218,7 +218,9 @@ if __name__ == '__main__':
         results_file = f"{this_consensus}-results.pickle".replace(" ","_")
         with open(results_file, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump(result, f)
+#            pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
+
 
     ipdb.set_trace()
 
