@@ -254,7 +254,7 @@ class DampedDrivenOscillatorCosmology(Cosmology):
         self.n_parameters =  self.n_nuisance + self.n_cosmological
         self.fiducial_cosmological_parameters = np.array([1.0]) # w
         self.cosmological_parameter_names = ['oscillator frequency']
-        self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
+        self.fiducial_nuisance_parameters = np.array([.50,0.20,0.3,np.pi,.0,1.0])
 #        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
         self.nuisance_parameter_names = ['drag','driver amplitude','driver frequency','driver phase','oscillator initial position','oscillator initial velocity']
 
@@ -310,10 +310,9 @@ class DampedDrivenOscillatorVariableGCosmology(Cosmology):
         self.n_nuisance = 6
         self.name = 'Damped-driven harmonic oscillator with position-dependent gravity cosmology'
         self.n_parameters =  self.n_nuisance + self.n_cosmological
-        self.fiducial_cosmological_parameters = np.array([1.0, 0.0]) # w
+        self.fiducial_cosmological_parameters = np.array([1.0, .25]) # w
         self.cosmological_parameter_names = ['frequency of osciallator', 'height-dependence of oscillator frequency']
-        self.fiducial_nuisance_parameters = np.array([0.10,0.20,0.3,np.pi,.0,1.0])
-#        self.fiducial_nuisance_parameters = np.array([0.0,0.0,0.3,np.pi,.0,1.0]) # to turn off damping and driving
+        self.fiducial_nuisance_parameters = np.array([0.50,0.20,0.3,np.pi,.0,1.0])
         self.nuisance_parameter_names = ['drag','driver amplitude','driver frequency','driver phase','oscillator initial position','oscillator initial velocity']
 
     def get_parameter_set(self):
