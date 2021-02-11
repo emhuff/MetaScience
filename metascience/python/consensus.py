@@ -278,9 +278,11 @@ class MostlyBetOnMeConsensus(ImpatientConsensus):
             if i == 0:
                 if chi2_list[i] >= self.tolerance*self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
+                    print("bad fit, updating systematics")
             else:
                 if chi2_list[i] >= self.chi2_dof_threshold:
                     self.systematics_judgment[i] = True
+                    print("bad fit, updating systematics")
 
         if self.is_tension:
             if all(chi2_list < self.chi2_dof_threshold):
@@ -474,7 +476,7 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
     consensus.tm and consensus.is_tension, then call consensus.render_judgment.
     '''
 
-    def __init__(self, interpretations, patience = None):
+    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = None):
         super().__init__(interpretations = interpretations)
         self.name = 'UnderestimatedError Consensus'
         self.tm_thresh = np.zeros(len(interpretations))
@@ -492,6 +494,14 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
           otherwise, report the required increase in some way...
           (We don't have a mechanism to tell interpreters to "increase errors by X factor" yet.)
         '''
+
+        #We need some way to update the systematics judgment in case of bad fits even when there's no tension (like models based on ImpatientConsensus)
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+        for i, this_interp in enumerate(self.interpretations):
+            if chi2_list[i] >= self.chi2_dof_threshold: # this is a totally arbitrary choice of number for now
+                self.systematics_judgment[i] = True
+                print("bad fit, updating systematics")
+
 
         if self.is_tension == True:
             # determine how much to increase errors in order to solve tension... here?

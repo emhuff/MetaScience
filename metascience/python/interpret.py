@@ -280,6 +280,7 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         #print(fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological])
         #print('huh covariance')
         #print(self.best_fit_cosmological_parameter_covariance)
+        # Uncomment below to use Fisher covariance
         #self.best_fit_cosmological_parameter_covariance = fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
