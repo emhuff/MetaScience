@@ -4,7 +4,7 @@ import experiment
 import interpret
 import cosmology
 import consensus
-import pickle
+import dill
 import copy
 import ipdb
 
@@ -48,7 +48,7 @@ def plot_fits(filename,experiments,interpreters):
     fig.savefig(filename)
     plt.close(fig)
 
-## Fix scope issues! Variables defined here are in same namespace as those in the top-level function.
+
 
 def run_consensus_compare(consensus_name, experiment_names, interpreter_names, interpreter_cosmologies,
                           true_cosmology, experimental_parameters, noise_parameters,max_iter = 1000,
@@ -168,6 +168,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     result.consensus_name = consensus_name
     result.experiment_names = experiment_names
     result.true_cosmology = true_cosmology
+    result.true_systematics = true_systematics
     result.interpreter_names = interpreter_names
     result.interpreter_cosmologies = [thing.name for thing in interpreter_cosmologies]
     result.data_chi2 = [thing.chi2 for thing in interpreters]
@@ -177,7 +178,6 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     result.iterations = iter
     result.final_cosmology = this_cosmology.name
     result.final_tension_metric = this_consensus.tm
-    result.true_systematics = true_systematics
     result.consensus_cosmological_parameters = this_consensus.consensus_cosmological_parameters
     result.cosmological_parameter_names = this_cosmology.cosmological_parameter_names
     #result.nuisance_parameters = this_consensus.best_fit_nuisance_parameters
@@ -220,19 +220,19 @@ if __name__ == '__main__':
     for this_consensus in consensusize:
         these_interpreter_cosmologies = interpreter_cosmologies.copy()
         result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
-        results_file = f"{this_consensus}-results.pickle".replace(" ","_")
+        results_file = f"{this_consensus}-results.dill".replace(" ","_")
         with open(results_file, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(result, f)
+            dill.dump(result, f)
 #            pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
 
 
-    ipdb.set_trace()
+    #ipdb.set_trace()
 
 # To read:
 '''
-with open('data.pickle', 'rb') as f:
+with open('data.dill', 'rb') as f:
     # The protocol version used is detected automatically, so we do not
     # have to specify it.
-    data = pickle.load(f)
+    data = dill.load(f)
 '''
