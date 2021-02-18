@@ -32,4 +32,8 @@ class Configuration():
         return config_dict
 
 
-    def check
+    def check_configuration(self,config):
+        '''
+        Checks that the configuration file makes sense, is compliant.
+        '''
+        necessary_params = ['']
