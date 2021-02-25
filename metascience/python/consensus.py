@@ -200,7 +200,7 @@ class TensionOnlyConsensus(ImpatientConsensus):
         self._update_parameters()
 
 
-class AlwaysBetOnMeConsensus(DefaultConsensus):
+class AlwaysBetOnMeConsensus(ImpatientConsensus):
     '''
     Define tension with respect to 0th interpretation, which never updates
     their model if there is a tension and all others do. Opposite of
@@ -211,24 +211,18 @@ class AlwaysBetOnMeConsensus(DefaultConsensus):
     philosophy: we don't really ever change, we want others to change their
     models.
     '''
-    def __init__(self, interpretations,patience = 0):
-        #super().__init__()
-        super().__init__( interpretations = interpretations)
+    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = interpretations,chi2_dof_threshold = chi2_dof_threshold, patience = patience)
         self.name = 'AlwaysBetOnMe Consensus'
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
+
 
     def _update_parameters(self):
         '''
         For this consensus, the best estimate of the *cosmological* parameters
         is provided by the 0th interpretation.
         '''
-        self.consensus_cosmological_parameters = interpretations[0].best_fit_cosmological_parameters
-        self.consensus_parameter_covariance = interpretations[0].best_fit_cosmological_parameter_covariance
+        self.consensus_cosmological_parameters = self.interpretations[0].best_fit_cosmological_parameters
+        self.consensus_parameter_covariance = self.interpretations[0].best_fit_cosmological_parameter_covariance
 
     def render_judgment(self,number_of_tries = 0):
         # Measure the tension among the provided interpretation objects
@@ -239,10 +233,24 @@ class AlwaysBetOnMeConsensus(DefaultConsensus):
         # instruct both other interpreters to change systematics model
         # cosmology model remains fixed
 
-        if self.is_tension == True:
-            self.systematics_judgment[0] = False
-            for i in range(self.number_of_interpreters-1):
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+# this loop shows that all other need to change systematics
+        for i in range(self.number_of_interpreters-1):
+            if chi2_list[i+1] >= self.chi2_dof_threshold:
                 self.systematics_judgment[i+1] = True
+                print("bad fit for other people, updating systematics")
+
+# if there is tension but we all have a good fit, change cosmology
+        if self.is_tension:
+            if all(chi2_list < self.chi2_dof_threshold):
+                self.cosmology_judgment = True
+
+# if I'm impatient change cosmology
+        if (np.sum(self.systematics_judgment) > 0) and (number_of_tries > self.patience):
+            self.cosmology_judgment = True
+        #    self.systematics_judgment = [False]*len(self.interpretations)
+            print(f"checking we did change the cosmo {self.cosmology_judgment}")
 
         self._update_parameters()
 
@@ -253,7 +261,7 @@ class MostlyBetOnMeConsensus(ImpatientConsensus):
     tolerance so is less likely to update their systematics model. Otherwise
     it is like the Sensible Defaults decision rule.
 
-    philosophy: softer than always bet on me(?); has a different chi-sq thresh
+    philosophy: softer than always bet on me(?); has a different chin-sq thresh
     for changing the cosmology
     '''
     def __init__(self, interpretations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
@@ -298,7 +306,7 @@ class MostlyBetOnMeConsensus(ImpatientConsensus):
 
 
 
-class AlwaysBetOnThemConsensus(DefaultConsensus):
+class AlwaysBetOnThemConsensus(ImpatientConsensus):
     '''
     Define tension with respect to 0th interpretation, which always updates
     its systematics model if there is a tension, and the others never do.
@@ -309,15 +317,9 @@ class AlwaysBetOnThemConsensus(DefaultConsensus):
     philosophy: Impostor syndrome version; people who are very quick to revise
     their model (rare)
     '''
-    def __init__(self, interprations):
-        super().__init__()
+    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = 10):
+        super().__init__(interpretations = interpretations,chi2_dof_threshold = chi2_dof_threshold, patience = patience)
         self.name = 'AlwaysBetOnThem Consensus'
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
 
 
     def _update_parameters(self):
@@ -325,10 +327,17 @@ class AlwaysBetOnThemConsensus(DefaultConsensus):
         For this consensus, combine the results of the provided interpretation
          modules to get a best estimate of the *cosmological* parameters.
         '''
-        self.consensus_cosmological_parameters = np.mean(interpretations[1:].best_fit_cosmological_parameters)
-        self.consensus_parameter_covariance = np.matrix.mean(interpretations[1:].best_fit_cosmological_parameter_covariance)
+        self.consensus_cosmological_parameters=0*self.interpretations[0].best_fit_cosmological_parameters
+        self.consensus_parameter_covariance = 0*self.interpretations[0].best_fit_cosmological_parameter_covariance
 
-    def render_judgment(self):
+        for i in range(self.number_of_interpreters-1):
+            self.consensus_cosmological_parameters += self.interpretations[i+1].best_fit_cosmological_parameters
+            self.consensus_parameter_covariance += self.interpretations[i+1].best_fit_cosmological_parameter_covariance
+
+        self.consensus_cosmological_parameters/(self.number_of_interpreters-1)
+        self.consensus_parameter_covariance/(self.number_of_interpreters-1)
+
+    def render_judgment(self, number_of_tries = 0):
         # Measure the tension among the provided interpretation objects
         #  Based on this result, issue instructions.
 
@@ -337,10 +346,26 @@ class AlwaysBetOnThemConsensus(DefaultConsensus):
         # instruct both other interpreters to stay fixed
         # cosmology model remains fixed
 
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+# 0th interpreter needs to change systematics
+        if chi2_list[0] >= self.chi2_dof_threshold:
+            self.systematics_judgment[0] = True
+            print("bad fit for me, updating systematics")
+
+        if self.is_tension:
+            if all(chi2_list < self.chi2_dof_threshold):
+                self.cosmology_judgment = True
+
+
         if self.is_tension == True:
             self.systematics_judgment[0] = True
             for i in range(self.number_of_interpreters-1):
                 self.systematics_judgment[i+1] = False
+
+# if at least one interpreter has been told to update systematics, but patience has been reached
+        if (np.sum(self.systematics_judgment) > 0) and (number_of_tries > self.patience):
+            self.cosmology_judgment = True
+            self.systematics_judgment = [False]*len(self.interpretations)
 
         self._update_parameters()
 
@@ -399,58 +424,67 @@ class MostlyBetOnThemConsensus(ImpatientConsensus):
         self._update_parameters()
 
 
-class EveryoneIsWrongConsensus(DefaultConsensus):
+# class EveryoneIsWrongConsensus(ImpatientConsensus):
+#     '''
+#     need: good neutral evil
+#
+#     philosophy: ...
+#     '''
+#     def __init__(self, interprations):
+#         super().__init__()
+#         self.name = 'EveryoneIsWrong Consensus'
+#         self.interpretations = interpretations
+#         # self.systematics_judgment = [False]*len(interpretations)
+#         # self.cosmology_judgment = False
+#         # self.number_of_interpreters = len(interpretations)
+#         # self.is_tension = False
+#         # self.tm = np.zeros(len(interpretations))
+#
+#     def _update_parameters(self):
+#         '''
+#         For this consensus, combine the results of the provided interpretation
+#         modules to get a best estimate of the *cosmological* parameters.
+#         '''
+#         pass
+#
+#     def render_judgment(self):
+#         # Measure the tension among the provided interpretation objects
+#         #  Based on this result, issue instructions.
+#
+#         # see metric from above, decide if tension exists
+#         # all interpeters change their systematics model.
+#         # cosmology model remains fixed
+#
+#         if self.is_tension == True:
+#             for i in range(self.number_of_interpreters):
+#                 self.systematics_judgment[i] = True
+#
+#         self._update_parameters()
+
+
+class ShiftThatParadigmConsensus(ImpatientConsensus):
     '''
-    need: good neutral evil
-
-    philosophy: ...
-    '''
-    def __init__(self, interprations):
-        super().__init__()
-        self.name = 'EveryoneIsWrong Consensus'
-        self.interpretations = interpretations
-        self.systematics_judgment = [False]*len(interpretations)
-        self.cosmology_judgment = False
-        self.number_of_interpreters = len(interpretations)
-        self.is_tension = False
-        self.tm = np.zeros(len(interpretations))
-
-    def _update_parameters(self):
-        '''
-        For this consensus, combine the results of the provided interpretation
-        modules to get a best estimate of the *cosmological* parameters.
-        '''
-        pass
-
-    def render_judgment(self):
-        # Measure the tension among the provided interpretation objects
-        #  Based on this result, issue instructions.
-
-        # see metric from above, decide if tension exists
-        # all interpeters change their systematics model.
-        # cosmology model remains fixed
-
-        if self.is_tension == True:
-            for i in range(self.number_of_interpreters):
-                self.systematics_judgment[i] = True
-
-        self._update_parameters()
-
-
-class ShiftThatParadigmConsensus(DefaultConsensus):
-    '''
+    If there's a bad fit (regardless of tension), update systematics.
     If there is a tension, everyone updates their cosmology.
-    Never tells interpreters to update systematics.
     '''
-    def __init__(self, interpretations):
-        super().__init__(interpretations=interpretations)
+
+
+    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = 0):
+        super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold, patience = patience)
         self.name = 'ShiftThatParadigm Consensus'
 
 
-
-    def render_judgment(self):
+    def render_judgment(self, number_of_tries = 0):
         # see metric from DefaultConsensus, decide if tension exists
         # all interpreters change their cosmologies
+
+        chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
+
+# this loop shows that all other need to change systematics
+        for i in range(self.number_of_interpreters):
+            if chi2_list[i] >= self.chi2_dof_threshold:
+                self.systematics_judgment[i] = True
+                print("bad fit, updating systematics")
 
         if self.is_tension == True:
             self.cosmology_judgment = True
