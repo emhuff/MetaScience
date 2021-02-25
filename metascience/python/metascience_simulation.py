@@ -194,7 +194,8 @@ if __name__ == '__main__':
 
     experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
-    noise_parameters = [np.array([0.03]), np.array([0.1])]
+    experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,50)}]
+    noise_parameters = [np.array([0.03]), np.array([0.001])]
     n_true_sys = 5
     true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
     number_of_consensus = len(consensusize)
@@ -228,6 +229,7 @@ if __name__ == '__main__':
 
 
     #ipdb.set_trace()
+
 
 # To read:
 '''

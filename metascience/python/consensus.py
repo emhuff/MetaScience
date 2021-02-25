@@ -211,8 +211,9 @@ class AlwaysBetOnMeConsensus(DefaultConsensus):
     philosophy: we don't really ever change, we want others to change their
     models.
     '''
-    def __init__(self, interpretations):
-        super().__init__()
+    def __init__(self, interpretations,patience = 0):
+        #super().__init__()
+        super().__init__( interpretations = interpretations)
         self.name = 'AlwaysBetOnMe Consensus'
         self.interpretations = interpretations
         self.systematics_judgment = [False]*len(interpretations)
@@ -229,7 +230,7 @@ class AlwaysBetOnMeConsensus(DefaultConsensus):
         self.consensus_cosmological_parameters = interpretations[0].best_fit_cosmological_parameters
         self.consensus_parameter_covariance = interpretations[0].best_fit_cosmological_parameter_covariance
 
-    def render_judgment(self):
+    def render_judgment(self,number_of_tries = 0):
         # Measure the tension among the provided interpretation objects
         #  Based on this result, issue instructions.
 
@@ -267,9 +268,9 @@ class MostlyBetOnMeConsensus(ImpatientConsensus):
         Based on this result, issue instructions.
 
         see metric from above, decide if tension exists
-            interpreter 1 changes their model less often.
+        interpreter 1 changes their model less often.
         instruct both other interpreters to change systematics model if fits bad
-            cosmology model updates if there is a tension and fits are good
+        cosmology model updates if there is a tension and fits are good
         '''
 
         chi2_list = np.array([thing.chi2*1./thing.measured_data_vector.size for thing in self.interpretations])
