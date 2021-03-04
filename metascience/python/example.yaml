@@ -1,0 +1,57 @@
+
+
+    '''
+    Parameters specified below:
+        - consensus (sub)class name(s)
+        - experimental parameters
+            - experiment names
+            - true cosmology
+            - times
+            - noise parameters
+            - true systematics
+        - intepreter parameters:
+            - interpreter names
+            - (list of) interpreter cosmologies
+            - number of free interpreter systematics
+
+    '''
+
+consensus: # List of consensus models
+  AlwaysBetOnMe:
+    patience:
+    other attribute:
+
+experiment: # List of experiment names
+  SimplePendulumExperimentA:
+    name: 'SimplePendulumExperiment'
+    true_cosmology:
+      true_cosmological_parameters:   # Optional
+      true_nuisance_parameters:   # Optional
+    true_systematics:
+    times:
+      number_of_times:
+      range_of_times:
+    noise_parameters:
+
+
+interpreters:
+  cosmologies: ['DampedDrivenOscillatorVariableGCosmology', 'DampedDrivenOscillatorCosmology', 'CosineCosmology']
+    CosineCosmology:
+      fiducial_cosmological_parameters: # not implemented
+      fiducial_nuisance_parameters: # not implemented
+    DampedDrivenOscillatorCosmology:
+      fiducial_cosmological_parameters: # not implemented
+      fiducial_nuisance_parameters: # not implemented
+    DampedDrivenOscillatorVariableGCosmology:
+      fiducial_cosmological_parameters: # not implemented
+      fiducial_nuisance_parameters: # not implemented
+
+# List of cosmology names
+  SimplePendulumExperimentA:
+    default_cosmology_parameters:  # Optional
+    default_systematics_parameters:
+
+
+  SimplePendulumExperimentB:
+    default_parameters:   # Optional
+    starting_systematics_parameters:
