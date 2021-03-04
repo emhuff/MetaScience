@@ -64,11 +64,11 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
     true_parameters = truth.get_parameter_set()
     true_systematics_parameters = [true_systematics]*number_of_experiments
 
-    if true_cosmology=='DampedDrivenOscillatorCosmology':
-        true_parameters[3] = np.sqrt(12.)
-        true_parameters[1] = 0.5
-    else:
-        print(f'Ok buddy relax')
+    # if true_cosmology=='DampedDrivenOscillatorCosmology':
+    #     true_parameters[3] = np.sqrt(12.)
+    #     true_parameters[1] = 0.5
+    # else:
+    #     print(f'Ok buddy relax')
 
     assert number_of_experiments == len(interpreter_names), "Experiment_names and interpreter_names should be the same length."
 
@@ -189,6 +189,23 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
 
 if __name__ == '__main__':
 
+
+    '''
+    Parameters specified below:
+        - consensus (sub)class name(s)
+        - experimental parameters
+            - experiment names
+            - true cosmology
+            - times
+            - noise parameters
+            - true systematics
+        - intepreter parameters:
+            - interpreter names
+            - (list of) interpreter cosmologies
+            - number of free interpreter systematics
+
+
+    '''
     #consensusize = ['UnderestimatedErrorConsensus']
     consensusize = ['ShiftThatParadigmConsensus']
 

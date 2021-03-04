@@ -36,4 +36,4 @@ class Configuration():
         '''
         Checks that the configuration file makes sense, is compliant.
         '''
-        necessary_params = ['']
+        necessary_params = ['consensus', 'experiment', 'interpreter']
