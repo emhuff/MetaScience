@@ -1,29 +1,31 @@
-
-
-    '''
-    Parameters specified below:
-        - consensus (sub)class name(s)
-        - experimental parameters
-            - experiment names
-            - true cosmology
-            - times
-            - noise parameters
-            - true systematics
-        - intepreter parameters:
-            - interpreter names
-            - (list of) interpreter cosmologies
-            - number of free interpreter systematics
-
-    '''
-
 consensus: # List of consensus models
-  AlwaysBetOnMe:
-    patience:
-    other attribute:
+  #consensusize: ['ImpatientConsensus','ShiftThatParadigmConsensus'] #change to consensus_names to be the same as interpreter_names?
+  ImpatientConsensus:
+    patience: 5
+    chi2_dof_threshold: 1.25
+  MostlyBetOnMeConsensus:
+    patience: 5
+    chi2_dof_threshold: 1.25
+    tolerance: 2
+  MostlyBetOnThemConsensus:
+    patience: 5
+    chi2_dof_threshold: 1.25
+    tolerance: 2
+  AlwaysBetOnMeConsensus:
+    patience: 5
+    chi2_dof_threshold: 1.25
+  AlwaysBetOnThemConsensus:
+    patience: 5
+    chi2_dof_threshold: 1.25
+  ShiftThatParadigmConsensus:
+    chi2_dof_threshold: 1.25
+  UnderestimatedErrorConsensus:
+    chi2_dof_threshold: 1.25
 
-experiment: # List of experiment names
-  SimplePendulumExperimentA:
-    name: 'SimplePendulumExperiment'
+
+
+experiments: # List of experiment names
+  SimplePendulumExperiment:
     true_cosmology:
       true_cosmological_parameters:   # Optional
       true_nuisance_parameters:   # Optional
@@ -34,24 +36,33 @@ experiment: # List of experiment names
     noise_parameters:
 
 
-interpreters:
-  cosmologies: ['DampedDrivenOscillatorVariableGCosmology', 'DampedDrivenOscillatorCosmology', 'CosineCosmology']
-    CosineCosmology:
-      fiducial_cosmological_parameters: # not implemented
-      fiducial_nuisance_parameters: # not implemented
-    DampedDrivenOscillatorCosmology:
-      fiducial_cosmological_parameters: # not implemented
-      fiducial_nuisance_parameters: # not implemented
-    DampedDrivenOscillatorVariableGCosmology:
-      fiducial_cosmological_parameters: # not implemented
-      fiducial_nuisance_parameters: # not implemented
 
-# List of cosmology names
+interpreter:
+  interpreter_names: ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
+  interpreter_cosmology: ['DampedDrivenOscillatorVariableGCosmology', 'AiryCosmology']
+
+
+cosmology:
+  cosmology_names: ['DampedDrivenOscillatorVariableGCosmology', 'DampedDrivenOscillatorCosmology', 'CosineCosmology']
+  true_cosmology: 'DampedDrivenOscillatorCosmology'
+  CosineCosmology:
+    fiducial_cosmological_parameters: # not implemented
+    fiducial_nuisance_parameters: # not implemented
+  DampedDrivenOscillatorCosmology:
+    fiducial_cosmological_parameters: # not implemented
+    fiducial_nuisance_parameters: # not implemented
+  DampedDrivenOscillatorVariableGCosmology:
+    fiducial_cosmological_parameters: # not implemented
+    fiducial_nuisance_parameters: # not implemented
+
+# interpreters
   SimplePendulumExperimentA:
+    name: 'SimplePendulumExperimentInterpreter'
     default_cosmology_parameters:  # Optional
     default_systematics_parameters:
 
 
   SimplePendulumExperimentB:
+    name: 'SimplePendulumExperimentInterpreter'
     default_parameters:   # Optional
     starting_systematics_parameters:

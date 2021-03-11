@@ -50,9 +50,12 @@ def plot_fits(filename,experiments,interpreters):
 
 
 
-def run_consensus_compare(consensus_name, experiment_names, interpreter_names, interpreter_cosmologies,
-                          true_cosmology, experimental_parameters, noise_parameters,max_iter = 1000,
-                          number_of_systematics=1, true_systematics = np.array(0.0)):
+def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
+                          interpreter_cosmologies,
+                          true_cosmology, experimental_parameters, noise_parameters,
+                          consensus_kwargs,
+                          max_iter=1000,
+                          number_of_systematics=1, true_systematics=np.array(0.0)):
     '''
     loops over experiments, and fits models to it.
     compare paraemeters models via a tension tension_metric; look at goodnesses of fit amongst
@@ -120,7 +123,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names, i
 
         plot_fits(filename=f"{consensus_name}_iter-{iter:03}.png",experiments = experiments,interpreters = interpreters)
 
-        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, patience = 5)
+        consensus_kwargs={"chi2_dof_threshold":1.25, "patience":10}
+        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, **kwargs)
         this_consensus.tension_metric()
         print(f"value of the tension parameter: {this_consensus.tm}")
         print(f"tension: {this_consensus.is_tension}")
@@ -207,7 +211,7 @@ if __name__ == '__main__':
 
     '''
     #consensusize = ['UnderestimatedErrorConsensus']
-    consensusize = ['ShiftThatParadigmConsensus']
+    consensusize = ['ImpatientConsensus']
 
     experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]

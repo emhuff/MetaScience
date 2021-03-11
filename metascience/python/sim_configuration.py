@@ -8,6 +8,8 @@ import pickle
 import copy
 import yaml
 import ipdb
+import pprint
+
 
 
 class Configuration():
@@ -36,4 +38,26 @@ class Configuration():
         '''
         Checks that the configuration file makes sense, is compliant.
         '''
-        necessary_params = ['consensus', 'experiment', 'interpreter']
+        necessary_params = ['consensus']#, 'experiment', 'interpreter']
+        pass
+
+
+if __name__ == '__main__':
+
+    test = Configuration(config_file='example.yaml')
+    #pprint.pprint(test.config_dict['consensus'])
+
+    consensus_sim = test.config_dict['consensus']
+    # first consensus
+#    print(consensus['consensusize'][0])
+    #consensus models to testing
+    consensus_names = consensus_sim.keys()
+    for name in consensus_names:
+        print(f'Consensus: {name}')
+        kwargs = consensus_sim[name]
+        interpreters='SimplePendulumExperimentInterpreter'
+        this_consensus = getattr(consensus,name)(interpretations = interpreters, **kwargs)
+        #this_consensus = getattr(consensus,model['name'        '])(interpretations = interpreters, **kwargs)
+        #this_consensus.tension_metric()
+        # now run stuff
+        print(kwargs)

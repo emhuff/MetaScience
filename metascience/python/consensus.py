@@ -378,7 +378,7 @@ class MostlyBetOnThemConsensus(ImpatientConsensus):
     tolerance so are less likely to update their systematics model
     '''
 
-    def __init__(self, interprations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
+    def __init__(self, interpretations, tolerance = 2, chi2_dof_threshold = 1.25, patience = 10):
         super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold , patience = patience)
         self.name = 'MostlyBetOnThem Consensus'
         self.tolerance = tolerance
@@ -469,7 +469,7 @@ class ShiftThatParadigmConsensus(ImpatientConsensus):
     '''
 
 
-    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = 0):
+    def __init__(self, interpretations, chi2_dof_threshold = 1.25, patience = None):
         super().__init__(interpretations = interpretations, chi2_dof_threshold = chi2_dof_threshold, patience = patience)
         self.name = 'ShiftThatParadigm Consensus'
 
@@ -515,7 +515,7 @@ class UnderestimatedErrorConsensus(DefaultConsensus):
         super().__init__(interpretations = interpretations)
         self.name = 'UnderestimatedError Consensus'
         self.tm_thresh = np.zeros(len(interpretations))
-        self.max_bias = 1 #maximum fraction of error increase allowed
+        self.max_bias = 1 #maximum fraction of error increase allowed ## SHOuLD this be a kwarg??
         self.patience = patience
 
     def render_judgment(self, number_of_tries = None):
