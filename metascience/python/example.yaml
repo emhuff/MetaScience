@@ -1,5 +1,4 @@
 consensus: # List of consensus models
-  #consensusize: ['ImpatientConsensus','ShiftThatParadigmConsensus'] #change to consensus_names to be the same as interpreter_names?
   ImpatientConsensus:
     patience: 5
     chi2_dof_threshold: 1.25
