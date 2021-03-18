@@ -52,7 +52,7 @@ experiments: # List of experiment names
 interpreters:
   interpreter_A:
     name:  SimplePendulumExperimentInterpreter
-    ['','SimplePendulumExperimentInterpreter']
+    #['','SimplePendulumExperimentInterpreter']
   interpreter_cosmology: ['DampedDrivenOscillatorVariableGCosmology', 'AiryCosmology']
 #n_systematics_parameters: 1
 #starting_systematics_parameters: [np.zeros(i) for i in n_systematics_parameters]
