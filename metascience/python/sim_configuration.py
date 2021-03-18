@@ -55,7 +55,7 @@ if __name__ == '__main__':
     for name in experiment_names:
         print(f'Consensus: {name}')
         kwargs = experiments[name]
-        print(np.array(experiments[name]['true_systematics']))
+        print(type(np.array(experiments[name]['true_systematics'])))
         #this_experiment = getattr(experiment,name)(cosmology=truth, **kwargs)
 
         #experimental_parameters=experimental_parameters[i],
