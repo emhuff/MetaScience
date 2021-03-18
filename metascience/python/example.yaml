@@ -24,11 +24,24 @@ consensus: # List of consensus models
 
 
 experiments: # List of experiment names
-  SimplePendulumExperiment:
-    true_cosmology:
-      true_cosmological_parameters:   # Optional
-      true_nuisance_parameters:   # Optional
-    true_systematics:
+  experiment_A:
+    name: SimplePendulumExperiment
+    true_systematics: np.array([0.])
+    experimental_parameters:
+      times: np.linspace(2.,8.,500)
+    noise_parameters: np.array([0.03])
+    n_true_sys: 1
+    times:
+      number_of_times:
+      range_of_times:
+  experiment_B:
+    name: SimplePendulumExperiment
+    n_true_sys: 5
+    experimental parameters:
+      times: np.linspace(0,10,500)
+    noise_parameters: np.array([0.1])
+    true_systematics: 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
+
     times:
       number_of_times:
       range_of_times:
@@ -36,14 +49,21 @@ experiments: # List of experiment names
 
 
 
-interpreter:
-  interpreter_names: ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
+interpreters:
+  interpreter_A:
+    name:  SimplePendulumExperimentInterpreter
+    ['','SimplePendulumExperimentInterpreter']
   interpreter_cosmology: ['DampedDrivenOscillatorVariableGCosmology', 'AiryCosmology']
+#n_systematics_parameters: 1
+#starting_systematics_parameters: [np.zeros(i) for i in n_systematics_parameters]
 
 
 cosmology:
   cosmology_names: ['DampedDrivenOscillatorVariableGCosmology', 'DampedDrivenOscillatorCosmology', 'CosineCosmology']
-  true_cosmology: 'DampedDrivenOscillatorCosmology'
+  true_cosmology:
+    name: DampedDrivenOscillatorCosmology
+    true_cosmological_parameters:   # Optional
+    true_nuisance_parameters:
   CosineCosmology:
     fiducial_cosmological_parameters: # not implemented
     fiducial_nuisance_parameters: # not implemented

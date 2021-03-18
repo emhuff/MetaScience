@@ -48,6 +48,22 @@ if __name__ == '__main__':
     #pprint.pprint(test.config_dict['consensus'])
 
     consensus_sim = test.config_dict['consensus']
+    experiments = test.config_dict['experiments']
+    experiment_names = experiments.keys()
+
+
+    for name in experiment_names:
+        print(f'Consensus: {name}')
+        kwargs = experiments[name]
+        print(experiments[name]['true_systematics'])
+        #this_experiment = getattr(experiment,name)(cosmology=truth, **kwargs)
+
+        #experimental_parameters=experimental_parameters[i],
+        #                                                           cosmology_parameters=true_parameters[:truth.n_cosmological],
+        #                                                           nuisance_parameters=true_parameters[truth.n_cosmological:],
+        #                                                           systematics_parameters=true_systematics_parameters[i],
+        #                                                           noise_parameters = noise_parameters[i],seed=110))
+
     # first consensus
 #    print(consensus['consensusize'][0])
     #consensus models to testing
