@@ -56,6 +56,7 @@ if __name__ == '__main__':
         print(f'Consensus: {name}')
         kwargs = experiments[name]
         print(type(np.array(experiments[name]['true_systematics'])))
+        #print( np.linspace(2.,8.,500))
         #this_experiment = getattr(experiment,name)(cosmology=truth, **kwargs)
 
         #experimental_parameters=experimental_parameters[i],
