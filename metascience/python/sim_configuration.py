@@ -51,7 +51,6 @@ if __name__ == '__main__':
     experiments = test.config_dict['experiments']
     experiment_names = experiments.keys()
 
-
     for name in experiment_names:
         print(f'Consensus: {name}')
         kwargs = experiments[name]
@@ -65,9 +64,7 @@ if __name__ == '__main__':
         #                                                           systematics_parameters=true_systematics_parameters[i],
         #                                                           noise_parameters = noise_parameters[i],seed=110))
 
-    # first consensus
-#    print(consensus['consensusize'][0])
-    #consensus models to testing
+
     consensus_names = consensus_sim.keys()
     for name in consensus_names:
         print(f'Consensus: {name}')

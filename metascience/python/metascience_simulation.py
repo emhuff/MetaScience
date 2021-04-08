@@ -65,7 +65,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     number_of_experiments = len(experiment_names)
     truth = getattr(cosmology, true_cosmology)()
     true_parameters = truth.get_parameter_set()
-    true_systematics_parameters = [true_systematics]*number_of_experiments
+    true_systematics_parameters = [true_systematics]*number_of_experiments # won't work if we want experiements to have diff true systematics
 
     # if true_cosmology=='DampedDrivenOscillatorCosmology':
     #     true_parameters[3] = np.sqrt(12.)

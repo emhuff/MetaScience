@@ -26,25 +26,29 @@ consensus: # List of consensus models
 experiments: # List of experiment names
   experiment_A:
     name: SimplePendulumExperiment
-    true_systematics: [0.]
-    experimental_parameters:
-      times:  #np.linspace(2.,8.,500)
-        start: 2
-        stop: 8
-        number: 500
-    noise_parameters: np.array([0.03])
-    n_true_sys: 1
-    times:
-      number_of_times:
-      range_of_times:
+    experimental parameters:
+      times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them.
+      times file: # if the times are not specified directly, read them from this file. (We'll need to be careful with formatting...)
+      times description: Justify yourself here. #the script will log this as a diagnostic when running.
+      # TO DO: decide whether to keep linspace generated values parameterized as below or allow generality by reading a file as above
+      #times:  #np.linspace(2.,8.,500)
+      #  start: 2
+      #  stop: 8
+      #  number: 500
+    noise_parameters: [0.03]
+    true_systematics:
+      systematics parameter values: [0.]
+      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
+      systematics description: no true systematics
   experiment_B:
     name: SimplePendulumExperiment
-    n_true_sys: 5
     experimental parameters:
       times: np.linspace(0,10,500)
-    noise_parameters: np.array([0.1])
+    noise_parameters: [0.1]
     true_systematics:
-      #1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
+      systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
+      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
+      systematics description: 1./(np.arange(5)+1)**2 * np.random.randn(5) -- (random numbers of gently decreasing size) # The script will log this as a diagnostic when running.
 
     times:
       number_of_times:
@@ -59,7 +63,10 @@ interpreters:
     #['','SimplePendulumExperimentInterpreter']
   interpreter_cosmology: ['DampedDrivenOscillatorVariableGCosmology', 'AiryCosmology']
 #n_systematics_parameters: 1
-#starting_systematics_parameters: [np.zeros(i) for i in n_systematics_parameters]
+  starting_systematics_parameters:
+    systematics parameter values: # If this is specified, use it.
+    systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
+
 
 
 cosmology:
