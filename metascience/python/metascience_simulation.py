@@ -7,6 +7,8 @@ import consensus
 import dill
 import copy
 import ipdb
+from sim_configuration import Configuration
+
 
 # From inifile, read in:
 # - name of consensus choices, number determined by length
@@ -33,9 +35,6 @@ class Results():
         self.__dict__ = d
 
 
-class Configuration():
-    def __init__(self):
-        pass
 
 def plot_fits(filename,experiments,interpreters):
     # Plot the fits at each iteration
@@ -210,10 +209,20 @@ if __name__ == '__main__':
 
 
     '''
-    #consensusize = ['UnderestimatedErrorConsensus']
-    consensusize = ['ImpatientConsensus']
 
-    experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
+    # Read the provided yaml file.
+    test = Configuration(config_file='example.yaml')
+
+    #consensusize = ['UnderestimatedErrorConsensus']
+    consensusize = test.config_dict['consensus'].keys()
+
+    experiments = test.config_dict['experiments']
+#    experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
+    experiment_names = [experiments[key]['class name'] for key in experiments.keys()]
+
+    times
+
+    if experiment_names[]
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
     noise_parameters = [np.array([0.03]), np.array([0.1])]
     n_true_sys = 5
@@ -224,7 +233,7 @@ if __name__ == '__main__':
     number_of_interpreters=len(interpreter_names)
     interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
                cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
-               cosmology.CosineCosmology(),cosmology.StraightLineCosmology()]
+               cosmology.CosineCosmology()]
 
     interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
                cosmology.BesselJCosmology(), cosmology.AiryCosmology(),

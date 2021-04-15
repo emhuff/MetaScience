@@ -1,4 +1,4 @@
-consensus: # List of consensus models
+consensus: # List of consensus models you want to try
   ImpatientConsensus:
     patience: 5
     chi2_dof_threshold: 1.25
@@ -23,76 +23,64 @@ consensus: # List of consensus models
 
 
 
-experiments: # List of experiment names
-  experiment_A:
-    name: SimplePendulumExperiment
+experiments:
+  experiment A:
+    class name: SimplePendulumExperiment
     experimental parameters:
-      times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them.
+      times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them. Brackets+CSV mandatory format here
       times file: # if the times are not specified directly, read them from this file. (We'll need to be careful with formatting...)
-      times description: Justify yourself here. #the script will log this as a diagnostic when running.
-      # TO DO: decide whether to keep linspace generated values parameterized as below or allow generality by reading a file as above
-      #times:  #np.linspace(2.,8.,500)
-      #  start: 2
-      #  stop: 8
-      #  number: 500
+      times description: np.linspace(2.,8.,500) #the script will log this as a diagnostic when running.
     noise_parameters: [0.03]
     true_systematics:
       systematics parameter values: [0.]
       systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: no true systematics
-  experiment_B:
-    name: SimplePendulumExperiment
+    interpreter:
+      class name: SimplePendulumExperimentInterpreter
+      starting_systematics_parameters:
+        systematics parameter values: [0.] # If this is specified, use it. Otherwise, look in the file in the next line.
+        systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
+      noise_parameters: [0.03] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
+
+  experiment B:
+    class name: SimplePendulumExperiment
     experimental parameters:
-      times: np.linspace(0,10,500)
+      times:
+      times file:
+      times description: np.linspace(0,10,500)
     noise_parameters: [0.1]
     true_systematics:
       systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
       systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: 1./(np.arange(5)+1)**2 * np.random.randn(5) -- (random numbers of gently decreasing size) # The script will log this as a diagnostic when running.
-
-    times:
-      number_of_times:
-      range_of_times:
-    noise_parameters:
-
-
-
-interpreters:
-  interpreter_A:
-    name:  SimplePendulumExperimentInterpreter
-    #['','SimplePendulumExperimentInterpreter']
-  interpreter_cosmology: ['DampedDrivenOscillatorVariableGCosmology', 'AiryCosmology']
-#n_systematics_parameters: 1
-  starting_systematics_parameters:
-    systematics parameter values: # If this is specified, use it.
-    systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
-
+    interpreter:
+      class name: SimplePendulumExperimentInterpreter
+      starting_systematics_parameters:
+        systematics parameter values: [0.] # If this is specified, use it. Otherwise, look in the file in the next line.
+        systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
+      noise_parameters: [0.03] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
 
 
 cosmology:
-  cosmology_names: ['DampedDrivenOscillatorVariableGCosmology', 'DampedDrivenOscillatorCosmology', 'CosineCosmology']
+  cosmology_names: [DampedDrivenOscillatorVariableGCosmology, DampedDrivenOscillatorCosmology,GaussianCosmology,BesselJCosmology, AiryCosmology, CosineCosmology]
   true_cosmology:
-    name: DampedDrivenOscillatorCosmology
-    true_cosmological_parameters:   # Optional
-    true_nuisance_parameters:
+    class name: DampedDrivenOscillatorCosmology
+    cosmological_parameters:   # Optional; if not specified, will use class defaults
+    nuisance_parameters:       # Optional; if not specified, will use class defaults
   CosineCosmology:
-    fiducial_cosmological_parameters: # not implemented
-    fiducial_nuisance_parameters: # not implemented
+    fiducial_cosmological_parameters: [0.5] # Optional:  default/starting values; used to initialize optimization, and not for anything else.
+    fiducial_nuisance_parameters: [2.0, 0.0] # Optional: default/starting values; used to initialize optimization, and not for anything else.
+  AiryCosmology:
+  BesselJCosmology:
+  GaussianCosmology:
   DampedDrivenOscillatorCosmology:
-    fiducial_cosmological_parameters: # not implemented
-    fiducial_nuisance_parameters: # not implemented
+    fiducial_cosmological_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
+    fiducial_nuisance_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
   DampedDrivenOscillatorVariableGCosmology:
-    fiducial_cosmological_parameters: # not implemented
-    fiducial_nuisance_parameters: # not implemented
-
-# interpreters
-  SimplePendulumExperimentA:
-    name: 'SimplePendulumExperimentInterpreter'
-    default_cosmology_parameters:  # Optional
-    default_systematics_parameters:
+    fiducial_cosmological_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
+    fiducial_nuisance_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
 
 
-  SimplePendulumExperimentB:
-    name: 'SimplePendulumExperimentInterpreter'
-    default_parameters:   # Optional
-    starting_systematics_parameters:
+results:
+  output location:
+  plots:

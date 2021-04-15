@@ -47,15 +47,16 @@ if __name__ == '__main__':
     test = Configuration(config_file='example.yaml')
     #pprint.pprint(test.config_dict['consensus'])
 
-    consensus_sim = test.config_dict['consensus']
+    consensus_sim = test.config_dict['consensus'].keys
     experiments = test.config_dict['experiments']
     experiment_names = experiments.keys()
+    consensus_names = consensus_sim.keys()
 
+    # initialize the experiments
     for name in experiment_names:
-        print(f'Consensus: {name}')
-        kwargs = experiments[name]
-        print(type(np.array(experiments[name]['true_systematics'])))
-        #print( np.linspace(2.,8.,500))
+        print(f'Experiment: {name}')
+        if name['']
+
         #this_experiment = getattr(experiment,name)(cosmology=truth, **kwargs)
 
         #experimental_parameters=experimental_parameters[i],
@@ -65,10 +66,11 @@ if __name__ == '__main__':
         #                                                           noise_parameters = noise_parameters[i],seed=110))
 
 
-    consensus_names = consensus_sim.keys()
     for name in consensus_names:
         print(f'Consensus: {name}')
         kwargs = consensus_sim[name]
+        #result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology,
+        #experimental_parameters, noise_parameters, true_systematics = true_systematics)
         interpreters='SimplePendulumExperimentInterpreter'
         this_consensus = getattr(consensus,name)(interpretations = interpreters, **kwargs)
         #this_consensus = getattr(consensus,model['name'        '])(interpretations = interpreters, **kwargs)
