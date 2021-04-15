@@ -44,10 +44,12 @@ class Configuration():
 
 if __name__ == '__main__':
 
+# NOTE we are moving the below testing code to metascience_simulation.py
+
     test = Configuration(config_file='example.yaml')
     #pprint.pprint(test.config_dict['consensus'])
 
-    consensus_sim = test.config_dict['consensus'].keys
+    consensus_sim = test.config_dict['consensus']
     experiments = test.config_dict['experiments']
     experiment_names = experiments.keys()
     consensus_names = consensus_sim.keys()

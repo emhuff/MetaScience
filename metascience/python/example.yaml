@@ -28,8 +28,8 @@ experiments:
     class name: SimplePendulumExperiment
     experimental parameters:
       times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them. Brackets+CSV mandatory format here
-      times file: # if the times are not specified directly, read them from this file. (We'll need to be careful with formatting...)
-      times description: np.linspace(2.,8.,500) #the script will log this as a diagnostic when running.
+#      times file: # if the times are not specified directly, read them from this file. (We'll need to be careful with formatting...)
+      times description: some numbers to test (was np.linspace(2.,8.,500)) #the script will log this as a diagnostic when running.
     noise_parameters: [0.03]
     true_systematics:
       systematics parameter values: [0.]
@@ -45,9 +45,9 @@ experiments:
   experiment B:
     class name: SimplePendulumExperiment
     experimental parameters:
-      times:
-      times file:
-      times description: np.linspace(0,10,500)
+#      times: # if reading from a file, do not define a 'times' key
+      times file: times_B.txt
+      times description: np.linspace(0,10,500) from file
     noise_parameters: [0.1]
     true_systematics:
       systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example

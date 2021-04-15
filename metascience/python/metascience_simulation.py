@@ -214,30 +214,43 @@ if __name__ == '__main__':
     test = Configuration(config_file='example.yaml')
 
     #consensusize = ['UnderestimatedErrorConsensus']
-    consensusize = test.config_dict['consensus'].keys()
+    consensus_names= test.config_dict['consensus'].keys()
+    number_of_consensus = len(consensus_names)
 
     experiments = test.config_dict['experiments']
 #    experiment_names = ['SimplePendulumExperiment', 'SimplePendulumExperiment']
     experiment_names = [experiments[key]['class name'] for key in experiments.keys()]
 
-    times
-
-    if experiment_names[]
+    # below is what we want to get out of the yaml: list of dictionaries
     experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
-    noise_parameters = [np.array([0.03]), np.array([0.1])]
-    n_true_sys = 5
+
+    experimental_parameters = [np.array(experiments[key]['experimental parameters']['times']) for key in experiments.keys()]
+# TO DO: loop above, if None read from file
+# then we don't need below. or maybe below is cool.
+    for count,key in enumerate(experiments.keys()):
+        try:
+            experimental_parameters[count] = np.loadtxt(experiments[key]['experimental parameters']['times file'])
+        except:
+            experimental_parameters[count] = np.array(experiments[key]['experimental parameters']['times'])
+
+
+# OR if we only define the 'times' or 'times file' that we use, we can do the following:
+    experimental_parameters = [np.array(experiments[key]['experimental parameters']['times']) if 'times' in experiments[key]['experimental parameters'].keys()
+        else np.loadtxt(experiments[key]['experimental parameters']['times file']) for key in experiments.keys()]
+# !!!! (then make it a list of dictionaries)
+
+
+    # for true systematics we need to do a similar thing as with 'times': read values, or read from file
     true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
-    number_of_consensus = len(consensusize)
+
+    noise_parameters = [np.array(experiments[key]['noise_parameters']) for key in experiments.keys()]
+    #noise_parameters = [np.array([0.03]), np.array([0.1])]
+
 
     interpreter_names = ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
     number_of_interpreters=len(interpreter_names)
-    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
-               cosmology.GaussianCosmology(),cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
-               cosmology.CosineCosmology()]
 
-    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(),
-               cosmology.BesselJCosmology(), cosmology.AiryCosmology(),
-               cosmology.CosineCosmology()]#,cosmology.StraightLineCosmology()]
+    interpreter_cosmologies = test.config_dict['cosmology']['cosmology_names']
 
     interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(), cosmology.CosineCosmology()]
 
