@@ -389,8 +389,9 @@ class MostlyBetOnThemConsensus(ImpatientConsensus):
         For this consensus, combine the results of the provided interpretation
          modules to get a best estimate of the *cosmological* parameters.
         '''
-        self.consensus_cosmological_parameters = np.mean(self.interpretations[1:].best_fit_cosmological_parameters)
-        self.consensus_parameter_covariance = np.matrix.mean(self.interpretations[1:].best_fit_cosmological_parameter_covariance)
+        ## TODO: Revisit once the cosmological parameters vectors are longer than 1.
+        self.consensus_cosmological_parameters = np.mean([interp.best_fit_cosmological_parameters for interp in  self.interpretations[1:]])
+        self.consensus_parameter_covariance = np.mean([interp.best_fit_cosmological_parameter_covariance for interp in  self.interpretations[1:]])
 
 
     def render_judgment(self, number_of_tries = 0):
