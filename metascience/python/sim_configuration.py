@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # initialize the experiments
     for name in experiment_names:
         print(f'Experiment: {name}')
-        if name['']
+        #if name['']
 
         #this_experiment = getattr(experiment,name)(cosmology=truth, **kwargs)
 

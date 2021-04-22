@@ -33,13 +33,13 @@ experiments:
     noise_parameters: [0.03]
     true_systematics:
       systematics parameter values: [0.]
-      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
+#      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: no true systematics
     interpreter:
       class name: SimplePendulumExperimentInterpreter
       starting_systematics_parameters:
         systematics parameter values: [0.] # If this is specified, use it. Otherwise, look in the file in the next line.
-        systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
+        #systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
       noise_parameters: [0.03] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
 
   experiment B:
@@ -51,13 +51,13 @@ experiments:
     noise_parameters: [0.1]
     true_systematics:
       systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
-      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
+#      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: 1./(np.arange(5)+1)**2 * np.random.randn(5) -- (random numbers of gently decreasing size) # The script will log this as a diagnostic when running.
     interpreter:
       class name: SimplePendulumExperimentInterpreter
       starting_systematics_parameters:
         systematics parameter values: [0.] # If this is specified, use it. Otherwise, look in the file in the next line.
-        systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
+#        systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
       noise_parameters: [0.03] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
 
 
@@ -70,15 +70,11 @@ cosmology:
   CosineCosmology:
     fiducial_cosmological_parameters: [0.5] # Optional:  default/starting values; used to initialize optimization, and not for anything else.
     fiducial_nuisance_parameters: [2.0, 0.0] # Optional: default/starting values; used to initialize optimization, and not for anything else.
-  AiryCosmology:
-  BesselJCosmology:
-  GaussianCosmology:
-  DampedDrivenOscillatorCosmology:
-    fiducial_cosmological_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
-    fiducial_nuisance_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
-  DampedDrivenOscillatorVariableGCosmology:
-    fiducial_cosmological_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
-    fiducial_nuisance_parameters: # Optional: default/starting values; used to initialize optimization, and not for anything else.
+#  AiryCosmology:
+#  BesselJCosmology:
+#  GaussianCosmology:
+#  DampedDrivenOscillatorCosmology:
+#  DampedDrivenOscillatorVariableGCosmology:
 
 
 results:

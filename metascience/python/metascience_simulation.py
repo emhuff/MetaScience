@@ -54,7 +54,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
                           true_cosmology, experimental_parameters, noise_parameters,
                           consensus_kwargs,
                           max_iter=1000,
-                          number_of_systematics=1, true_systematics=np.array(0.0)):
+                          starting_systematics = [np.array(0.)], true_systematics=[np.array(0.0)]):
     '''
     loops over experiments, and fits models to it.
     compare paraemeters models via a tension tension_metric; look at goodnesses of fit amongst
@@ -64,22 +64,35 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     number_of_experiments = len(experiment_names)
     truth = getattr(cosmology, true_cosmology)()
     true_parameters = truth.get_parameter_set()
-    true_systematics_parameters = [true_systematics]*number_of_experiments # won't work if we want experiements to have diff true systematics
+    if (len(experiment_names) > 1) & len(true_systematics) == 1:
+        true_systematics_parameters = [true_systematics]*number_of_experiments
+    elif len(experiment_names) != len(true_systematics):
+        raise Exception("Length of true systematics vector should be either equal to the number of experiments, or be a list containing a single true systematics vector.")
+    else:
+        true_systematics_parameters = true_systematics
 
-    # if true_cosmology=='DampedDrivenOscillatorCosmology':
-    #     true_parameters[3] = np.sqrt(12.)
-    #     true_parameters[1] = 0.5
-    # else:
-    #     print(f'Ok buddy relax')
+    if (len(experiment_names) > 1) & len(starting_systematics) == 1:
+        starting_systematics_parameters = [starting_systematics]*number_of_experiments
+    elif len(experiment_names) != len(starting_systematics):
+        raise Exception("Length of starting systematics vector should be either equal to the number of experiments, or be a list containing a single starting systematics vector.")
+    else:
+        starting_systematics_parameters = starting_systematics
+
+    # previously:
+#    n_systematics_parameters = [number_of_systematics for i in interpreter_names] # list of lengths
+#    starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
+    systematics_parameters =  starting_systematics_parameters # why? (we overwrite starting_systematics_parameters below! re-initialize to zeros)
+
+    # if we are setting starting_systematics to zero or grabbing from yaml, do we still need number_of_systematics or n_systematics_parameters ??
 
     assert number_of_experiments == len(interpreter_names), "Experiment_names and interpreter_names should be the same length."
+
+    if True:
+        print("Ok buddy relax")
 
     experiments = []
     interpreters = []
     this_cosmology = interpreter_cosmologies.pop()
-    n_systematics_parameters = [number_of_systematics for i in interpreter_names]
-    starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
-    systematics_parameters =  starting_systematics_parameters
 
     for i in range(number_of_experiments):
         experiments.append(getattr(experiment,experiment_names[i])(cosmology=truth,experimental_parameters=experimental_parameters[i],
@@ -122,8 +135,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
 
         plot_fits(filename=f"{consensus_name}_iter-{iter:03}.png",experiments = experiments,interpreters = interpreters)
 
-        consensus_kwargs={"chi2_dof_threshold":1.25, "patience":10}
-        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, **kwargs)
+#        consensus_kwargs={"chi2_dof_threshold":1.25, "patience":10}
+        this_consensus = getattr(consensus,consensus_name)(interpretations = interpreters, **consensus_kwargs)
         this_consensus.tension_metric()
         print(f"value of the tension parameter: {this_consensus.tm}")
         print(f"tension: {this_consensus.is_tension}")
@@ -142,8 +155,9 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
                 print('Ran out of cosmologies to try!')
                 break
             this_cosmology = interpreter_cosmologies.pop()
+            systematics_parameters = starting_systematics_parameters
             for i,interpreter in enumerate(interpreters):
-                starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters] # note: not sure why we need to re-define but we do!
+                #starting_systematics_parameters = systematics_parameters[i] #[np.zeros(i) for i in n_systematics_parameters]
                 interpreters[i] = getattr(interpret,interpreter_names[i])(experiment = experiments[i], cosmology=this_cosmology,
                                                                           starting_systematics_parameters = starting_systematics_parameters[i],
                                                                           noise_parameters = noise_parameters[i])
@@ -215,6 +229,7 @@ if __name__ == '__main__':
 
     #consensusize = ['UnderestimatedErrorConsensus']
     consensus_names= test.config_dict['consensus'].keys()
+    consensus_kwargs = [test.config_dict['consensus'][iname] for iname in consensus_names]
     number_of_consensus = len(consensus_names)
 
     experiments = test.config_dict['experiments']
@@ -222,47 +237,45 @@ if __name__ == '__main__':
     experiment_names = [experiments[key]['class name'] for key in experiments.keys()]
 
     # below is what we want to get out of the yaml: list of dictionaries
-    experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
+    #experimental_parameters=[{'times':np.linspace(2.,8.,500)},{'times':np.linspace(0,10,500)}]
 
-    experimental_parameters = [np.array(experiments[key]['experimental parameters']['times']) for key in experiments.keys()]
-# TO DO: loop above, if None read from file
-# then we don't need below. or maybe below is cool.
-    for count,key in enumerate(experiments.keys()):
-        try:
-            experimental_parameters[count] = np.loadtxt(experiments[key]['experimental parameters']['times file'])
-        except:
-            experimental_parameters[count] = np.array(experiments[key]['experimental parameters']['times'])
-
-
-# OR if we only define the 'times' or 'times file' that we use, we can do the following:
-    experimental_parameters = [np.array(experiments[key]['experimental parameters']['times']) if 'times' in experiments[key]['experimental parameters'].keys()
-        else np.loadtxt(experiments[key]['experimental parameters']['times file']) for key in experiments.keys()]
-# !!!! (then make it a list of dictionaries)
-
+# if we only define the 'times' or 'times file' that we use, we can do the following:
+    experimental_parameters = [{'times': np.array(experiments[key]['experimental parameters']['times'])} if 'times' in experiments[key]['experimental parameters'].keys()
+        else {'times': np.loadtxt(experiments[key]['experimental parameters']['times file'])} for key in experiments.keys()]
 
     # for true systematics we need to do a similar thing as with 'times': read values, or read from file
-    true_systematics = np.array([0.]) # 1./(np.arange(n_true_sys)+1)**2 * np.random.randn(n_true_sys)
+    true_systematics = [np.array(experiments[key]['true_systematics']['systematics parameter values']) if 'systematics parameter values' in experiments[key]['true_systematics'].keys()
+        else np.loadtxt(experiments[key]['true_systematics']['systematics parameter file']) for key in experiments.keys()]
+
+    starting_systematics = [np.array(experiments[key]['interpreter']['starting_systematics_parameters']['systematics parameter values']) if 'systematics parameter values' in experiments[key]['interpreter']['starting_systematics_parameters'].keys()
+        else np.loadtxt(experiments[key]['interpreter']['starting_systematics_parameters']['systematics parameter file']) for key in experiments.keys()]
 
     noise_parameters = [np.array(experiments[key]['noise_parameters']) for key in experiments.keys()]
     #noise_parameters = [np.array([0.03]), np.array([0.1])]
 
-
-    interpreter_names = ['SimplePendulumExperimentInterpreter','SimplePendulumExperimentInterpreter']
+    interpreter_names = [experiments[key]['interpreter']['class name'] for key in experiments.keys()]
     number_of_interpreters=len(interpreter_names)
 
-    interpreter_cosmologies = test.config_dict['cosmology']['cosmology_names']
+    cosmologies = test.config_dict['cosmology']
+    interpreter_cosmology_names = cosmologies['cosmology_names']
+    #interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(), cosmology.CosineCosmology()]
+    interpreter_cosmologies = []
+    for iname in interpreter_cosmology_names:
+        this_cosmo = getattr(cosmology,iname)()
+        if iname in cosmologies.keys():
+            if 'fiducial_cosmological_parameters' in cosmologies[iname].keys():
+                this_cosmo.fiducial_cosmological_parameters = cosmologies[iname]['fiducial_cosmological_parameters']
+            if 'fiducial_nuisance_parameters' in cosmologies[iname].keys():
+                this_cosmo.fiducial_nuisance_parameters = cosmologies[iname]['fiducial_nuisance_parameters']
+        interpreter_cosmologies.append(this_cosmo)
 
-    interpreter_cosmologies = [cosmology.DampedDrivenOscillatorVariableGCosmology(), cosmology.DampedDrivenOscillatorCosmology(), cosmology.CosineCosmology()]
 
-    true_cosmology = 'DampedDrivenOscillatorCosmology'
+    true_cosmology =  cosmologies['true_cosmology']['class name']
     print(f"The true cosmology is {true_cosmology}, ok buddy get wild")
-    #true_cosmology = 'CosineCosmology'
 
-    # TODO: wrap this in a loop that stores and (maybe?) visualizes results.
-
-    for this_consensus in consensusize:
+    for i,this_consensus in enumerate(consensus_names):
         these_interpreter_cosmologies = interpreter_cosmologies.copy()
-        result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, true_systematics = true_systematics)
+        result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, consensus_kwargs[i], true_systematics = true_systematics, starting_systematics = starting_systematics)
         results_file = f"{this_consensus}-results.dill".replace(" ","_")
         with open(results_file, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
