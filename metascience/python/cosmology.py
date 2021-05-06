@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.integrate import solve_ivp as solver
 from scipy import special as sp
+from astropy.cosmology import LambdaCDM
 
 class Cosmology(metaclass = ABCMeta):
     def __init__(self,complexity):
@@ -19,6 +20,50 @@ class Cosmology(metaclass = ABCMeta):
     def generate_model_data_vector(self,):
         pass
 
+
+class LCDM_distanceModulus(Cosmology):
+    def __init__(self):
+        self.complexity = 0
+        self.n_cosmological = 4
+        self.n_nuisance = 0
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
+        self.fiducial_cosmological_parameters = np.zeros(self.n_cosmological)
+        self.fiducial_nuisance_parameters = np.zeros(self.n_cosmological)
+
+    def get_parameter_set(self):
+         parameters = np.zeros(self.n_cosmological)
+         return parameters
+
+    def generate_model_data_vector(self,times,parameters):
+#        parameters = get_parameter_set()
+
+        cosmo = LambdaCDM(H0=parameters[0], Om0=parameters[1], Ode=parameters[2], Ob0=parameters[3], Tcmb0=2.725)
+        model_data_vector = cosmo.distmod(times).value
+        #not keeping units here
+
+        return model_data_vector
+
+class LCDM_age(Cosmology):
+    def __init__(self):
+        self.complexity = 0
+        self.n_cosmological = 4
+        self.n_nuisance = 0
+        self.n_parameters =  self.n_nuisance + self.n_cosmological
+        self.fiducial_cosmological_parameters = np.zeros(self.n_cosmological)
+        self.fiducial_nuisance_parameters = np.zeros(self.n_cosmological)
+
+    def get_parameter_set(self):
+         parameters = np.zeros(self.n_cosmological)
+         return parameters
+
+    def generate_model_data_vector(self,times,parameters):
+#        parameters = get_parameter_set()
+
+        cosmo = LambdaCDM(H0=parameters[0], Om0=parameters[1], Ode=parameters[2], Ob0=parameters[3], Tcmb0=2.725)
+        model_data_vector = cosmo.age(times).value
+        #not keeping units here
+
+        return model_data_vector
 
 
 class CargoCultCosmology(Cosmology):

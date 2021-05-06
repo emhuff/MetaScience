@@ -8,6 +8,8 @@ import dill
 import copy
 import ipdb
 from sim_configuration import Configuration
+import sys
+
 
 
 # From inifile, read in:
@@ -35,15 +37,21 @@ class Results():
         self.__dict__ = d
 
 
-
+# Plot TO DO:
+# - add a bottom panel with differences
 def plot_fits(filename,experiments,interpreters):
     # Plot the fits at each iteration
+    colors = ['teal','orchid']
     fig,ax = plt.subplots(figsize=(7,7))
     for i in range(len(experiments)):
-        ax.plot(experiments[i].times,experiments[i].observed_data_vector,label=f'data {i}',marker='.')
-        ax.plot(interpreters[i].times,interpreters[i].best_fit_observed_model,label=f'model {i}')
-        ax.plot(interpreters[i].times,interpreters[i].best_fit_ideal_model,label=f'ideal {i}',linestyle='--')
-    ax.legend(loc='best')
+        datastr = r'Data {}, $\chi^2 = ${:.3}'.format(i,interpreters[i].chi2)
+        ax.plot(experiments[i].times,experiments[i].observed_data_vector,label=datastr,marker='.',color=colors[i])
+        ax.plot(interpreters[i].times,interpreters[i].best_fit_observed_model,label=f'Model {i} with Systematics',color=colors[i])
+        ax.plot(interpreters[i].times,interpreters[i].best_fit_ideal_model,label=f'Model {i} w/out Systematics',linestyle='--',color=colors[i])
+    ax.set_ylim(-1.2,1)
+    ax.set_xlabel('time')
+    ax.set_ylabel('position')
+    ax.legend(loc='lower right',frameon=False)
     fig.savefig(filename)
     plt.close(fig)
 
@@ -224,8 +232,12 @@ if __name__ == '__main__':
 
     '''
 
+    try:
+        config_file = sys.argv[1]
+    except:
+        config_file='example.yaml'
     # Read the provided yaml file.
-    test = Configuration(config_file='example.yaml')
+    test = Configuration(config_file=config_file)
 
     #consensusize = ['UnderestimatedErrorConsensus']
     consensus_names= test.config_dict['consensus'].keys()
@@ -278,8 +290,8 @@ if __name__ == '__main__':
         result = run_consensus_compare(this_consensus, experiment_names, interpreter_names, these_interpreter_cosmologies, true_cosmology, experimental_parameters, noise_parameters, consensus_kwargs[i], true_systematics = true_systematics, starting_systematics = starting_systematics)
         results_file = f"{this_consensus}-results.dill".replace(" ","_")
         with open(results_file, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
             dill.dump(result, f)
+            # Pickle the 'data' dictionary using the highest protocol available.
 #            pickle.dump(result, f, pickle.HIGHEST_PROTOCOL)
 
 
