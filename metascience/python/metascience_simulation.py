@@ -44,9 +44,9 @@ def plot_fits(filename,experiments,interpreters):
     colors = ['teal','orchid']
     fig,ax = plt.subplots(figsize=(7,7))
     for i in range(len(experiments)):
-        datastr = r'Data {}, $\chi^2 = ${:.3}'.format(i,interpreters[i].chi2)
-        ax.plot(experiments[i].times,experiments[i].observed_data_vector,label=datastr,marker='.',color=colors[i])
-        ax.plot(interpreters[i].times,interpreters[i].best_fit_observed_model,label=f'Model {i} with Systematics',color=colors[i])
+        modelstr = r'Model {}, $\chi^2 = ${:.3}'.format(i,interpreters[i].chi2)
+        ax.plot(experiments[i].times,experiments[i].observed_data_vector,label=f'Data {i}',marker='.',color=colors[i])
+        ax.plot(interpreters[i].times,interpreters[i].best_fit_observed_model,label=modelstr,color=colors[i])
         ax.plot(interpreters[i].times,interpreters[i].best_fit_ideal_model,label=f'Model {i} w/out Systematics',linestyle='--',color=colors[i])
     ax.set_ylim(-1.2,1)
     ax.set_xlabel('time')
@@ -119,6 +119,20 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     converged = False
     # each interpreter fits a model (like different cosmic probes)
     # testing different consensus rules
+
+    cosmological_model_history = []
+    cosmological_parameter_history = []
+    nuisance_parameter_history = []
+    systematics_parameter_history = []
+    cosmological_parameter_covariance_history = []
+
+    # Note: We don't currently store these in the interpreter class.
+    # TODO: Decide whether  we need to track this.
+    nuisance_parameter_covariance_history = []
+    systematics_parameter_covariance_history = []
+
+
+
     for iter in range(max_iter):
         print(f"------------------------------")
         print(f"Iteration {iter}:")
@@ -126,6 +140,14 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
         # Fit the models.
         for interpreter in interpreters:
             interpreter.fit_model()
+            # TODO: store results from different interpreters in separate [objects] of some kind
+            #
+            cosmological_model_history.append(this_cosmology.name)
+            cosmological_parameter_history.append(interpreter.best_fit_cosmological_parameters)
+            nuisance_parameter_history.append(interpreter.best_fit_cosmological_parameters)
+            systematics_parameter_history.append(interpreter.best_fit_systematics_parameters)
+            cosmological_parameter_covariance_history.append(interpreter.best_fit_cosmological_parameter_covariance)
+
             if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance) < 0):
                 print(f"the fit didn't proceed, your errors are {np.diag(interpreter.best_fit_cosmological_parameter_covariance)}- you should probably check your data, soldier")
                 still_ok = False
@@ -209,6 +231,13 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     #result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
     result.consensus_parameter_covariance = this_consensus.consensus_parameter_covariance
 
+    # Store the histories, too.
+    result.cosmological_model_history = cosmological_model_history
+    result.cosmological_parameter_history = cosmological_parameter_history
+    result.cosmological_parameter_covariance_history = cosmological_parameter_covariance_history
+    result.systematics_parameter_history = systematics_parameter_history
+    result.nuisance_parameter_history = nuisance_parameter_history
+
     return result
 
 
@@ -228,8 +257,6 @@ if __name__ == '__main__':
             - interpreter names
             - (list of) interpreter cosmologies
             - number of free interpreter systematics
-
-
     '''
 
     try:
