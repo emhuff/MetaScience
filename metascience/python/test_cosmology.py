@@ -7,6 +7,10 @@ truth = cosmology.LCDM_distanceModulus()
 
 truth_parameters = truth.get_parameter_set()
 
+truth_parameters[0]=70.
+truth_parameters[1] = 0.26
+truth_parameters[2] = 0.7
+truth_parameters[3]  = 0.04
 #truth_parameters[0] = 1.0 # oscillator frequency
 #truth_parameters[1] = 0.01 # C -- drag/damping coefficient
 #truth_parameters[2] = .0 # A -- amplitude of forcing function
