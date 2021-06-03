@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Test the true cosmology.
-truth = cosmology.DampedDrivenOscillatorVariableGCosmology()
+truth = cosmology.LCDM_distanceModulus()
 
 truth_parameters = truth.get_parameter_set()
 
@@ -16,14 +16,14 @@ truth_parameters = truth.get_parameter_set()
 #truth_parameters[6] = 0.0 # theta_v0-- initial velocity of pendulum
 
 # At what times are we generating the data?
-times = np.linspace(0,10,5000)
+times = np.linspace(0,1,5000)
 
 # Now generate some data with this parameter set!
 real_data = truth.generate_model_data_vector(times,parameters=truth_parameters)
 
 
 # Test the model cosmology.
-model = cosmology.truth = cosmology.DampedDrivenOscillatorCosmology()
+model =  cosmology.LCDM_distanceModulus()
 ()
 model_parameters = model.get_parameter_set()
 model_data = model.generate_model_data_vector(times,parameters=model_parameters)
