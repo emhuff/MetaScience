@@ -62,7 +62,7 @@ experiments:
 
 
 cosmology:
-  cosmology_names: [DampedDrivenOscillatorVariableGCosmology, DampedDrivenOscillatorCosmology,GaussianCosmology,BesselJCosmology, AiryCosmology, CosineCosmology]
+  cosmology_names: [DampedDrivenOscillatorVariableGCosmology, DampedDrivenOscillatorCosmology,GaussianCosmology, AiryCosmology, CosineCosmology]
   true_cosmology:
     class name: DampedDrivenOscillatorCosmology
     cosmological_parameters:   # Optional; if not specified, will use class defaults
@@ -71,7 +71,7 @@ cosmology:
     fiducial_cosmological_parameters: [0.5] # Optional:  default/starting values; used to initialize optimization, and not for anything else.
     fiducial_nuisance_parameters: [2.0, 0.0] # Optional: default/starting values; used to initialize optimization, and not for anything else.
 #  AiryCosmology:
-#  BesselJCosmology:
+#  BesselJCosmology: (note: removed from list because of fitter errors)
 #  GaussianCosmology:
 #  DampedDrivenOscillatorCosmology:
 #  DampedDrivenOscillatorVariableGCosmology:
