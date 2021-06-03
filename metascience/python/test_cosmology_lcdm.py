@@ -33,7 +33,9 @@ experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,exper
 
 
 data = experiment_instance.generate_data()
-#
+
+print(data) # TO DO: why is data 'None'?
+
 # # Test the model cosmology.
 # model =  cosmology.LCDM_distanceModulus()
 # model_parameters = model.get_parameter_set()
@@ -41,8 +43,8 @@ data = experiment_instance.generate_data()
 # model_data = model.generate_model_data_vector(times,parameters=model_parameters)
 
 # plot this.
-plt.plot(times,real_data,label='real')
-plt.plot(times,model_data,label='model')
+plt.plot(redshifts,true_model,label='model')
+plt.plot(experimental_parameters['redshifts'],data,label='data')
 plt.xlabel('time')
 plt.ylabel('position')
 plt.legend(loc='best')
