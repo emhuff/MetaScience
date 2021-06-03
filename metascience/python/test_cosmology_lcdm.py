@@ -16,7 +16,9 @@ true_systematics=[np.array(0.0)]
 noise_parameters=[np.array(0.03)]
 
 # At what times are we generating the data?
-experimental_parameters=[{'redshifts':np.linspace(0.,1.,500)}
+redshifts = np.linspace(0.,1.,500)
+
+experimental_parameters=[{'redshifts':np.linspace(0.,1.,50)}
 
 
 # Now generate some data with this parameter set!
