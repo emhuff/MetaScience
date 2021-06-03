@@ -121,13 +121,11 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     # testing different consensus rules
 
     # initialize empty parameter histories... list of dictionaries of lists...
-    histories = [{'cosmological_model_history':[], 'cosmological_paramter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
+    histories = [{'cosmological_model_history':[], 'cosmological_parameter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
         'cosmological_parameter_covariance_history':[]},
-        {'cosmological_model_history':[], 'cosmological_paramter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
+        {'cosmological_model_history':[], 'cosmological_parameter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
             'cosmological_parameter_covariance_history':[]}]
-
-
-    # Note: We don't currently store these in the interpreter class.
+    # Note: We don't currently store the below in the interpreter class.
     # TODO: Decide whether  we need to track this.
     nuisance_parameter_covariance_history = []
     systematics_parameter_covariance_history = []
@@ -231,12 +229,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     #result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
     result.consensus_parameter_covariance = this_consensus.consensus_parameter_covariance
 
-    # Store the histories, too.
-    result.cosmological_model_history = cosmological_model_history
-    result.cosmological_parameter_history = cosmological_parameter_history
-    result.cosmological_parameter_covariance_history = cosmological_parameter_covariance_history
-    result.systematics_parameter_history = systematics_parameter_history
-    result.nuisance_parameter_history = nuisance_parameter_history
+    # Store the histories, too (cosmological parameters, nuisance parameters, etc.).
+    result.histories = histories
 
     return result
 

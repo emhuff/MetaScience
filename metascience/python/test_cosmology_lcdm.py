@@ -16,13 +16,14 @@ true_systematics=[np.array(0.0)]
 noise_parameters=[np.array(0.03)]
 
 # At what times are we generating the data?
-redshifts  = np.linspace(0,1,5000)
+experimental_parameters=[{'redshifts':np.linspace(0.,1.,500)}
+
 
 # Now generate some data with this parameter set!
 true_model = truth.generate_model_data_vector(redshifts,parameters=truth_parameters)
 
 
-experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters[i],
+experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters,
                                                             cosmology_parameters=true_parameters[:truth.n_cosmological],
                                                             nuisance_parameters=true_parameters[truth.n_cosmological:],
                                                             systematics_parameters=true_systematics,
