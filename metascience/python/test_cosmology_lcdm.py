@@ -1,7 +1,7 @@
 import cosmology
 import numpy as np
 import matplotlib.pyplot as plt
-
+import experiment
 # Test the true cosmology.
 truth = cosmology.LCDM_distanceModulus()
 
@@ -22,14 +22,14 @@ redshifts  = np.linspace(0,1,5000)
 true_model = truth.generate_model_data_vector(redshifts,parameters=truth_parameters)
 
 
-experiment = DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters[i],
+experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters[i],
                                                             cosmology_parameters=true_parameters[:truth.n_cosmological],
                                                             nuisance_parameters=true_parameters[truth.n_cosmological:],
                                                             systematics_parameters=true_systematics,
                                                             noise_parameters = noise_parameters,seed=110)
 
 
-data = experiments.generate_data()
+data = experiment_instance.generate_data()
 #
 # # Test the model cosmology.
 # model =  cosmology.LCDM_distanceModulus()

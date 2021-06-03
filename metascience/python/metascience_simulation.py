@@ -120,11 +120,12 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     # each interpreter fits a model (like different cosmic probes)
     # testing different consensus rules
 
-    cosmological_model_history = []
-    cosmological_parameter_history = []
-    nuisance_parameter_history = []
-    systematics_parameter_history = []
-    cosmological_parameter_covariance_history = []
+    # initialize empty parameter histories... list of dictionaries of lists...
+    histories = [{'cosmological_model_history':[], 'cosmological_paramter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
+        'cosmological_parameter_covariance_history':[]},
+        {'cosmological_model_history':[], 'cosmological_paramter_history':[],'nuisance_parameter_history':[], 'systematics_parameter_history':[],
+            'cosmological_parameter_covariance_history':[]}]
+
 
     # Note: We don't currently store these in the interpreter class.
     # TODO: Decide whether  we need to track this.
@@ -132,21 +133,20 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     systematics_parameter_covariance_history = []
 
 
-
     for iter in range(max_iter):
         print(f"------------------------------")
         print(f"Iteration {iter}:")
         print(f"Using cosmology: {this_cosmology.name}")
         # Fit the models.
-        for interpreter in interpreters:
+        for i,interpreter in enumerate(interpreters):
             interpreter.fit_model()
             # TODO: store results from different interpreters in separate [objects] of some kind
-            #
-            cosmological_model_history.append(this_cosmology.name)
-            cosmological_parameter_history.append(interpreter.best_fit_cosmological_parameters)
-            nuisance_parameter_history.append(interpreter.best_fit_cosmological_parameters)
-            systematics_parameter_history.append(interpreter.best_fit_systematics_parameters)
-            cosmological_parameter_covariance_history.append(interpreter.best_fit_cosmological_parameter_covariance)
+            histories[i]['cosmological_model_history'].append(this_cosmology.name)
+            #cosmological_model_history.append(this_cosmology.name)
+            histories[i]['cosmological_parameter_history'].append(interpreter.best_fit_cosmological_parameters)
+            histories[i]['nuisance_parameter_history'].append(interpreter.best_fit_cosmological_parameters)
+            histories[i]['systematics_parameter_history'].append(interpreter.best_fit_systematics_parameters)
+            histories[i]['cosmological_parameter_covariance_history'].append(interpreter.best_fit_cosmological_parameter_covariance)
 
             if np.any(np.diag(interpreter.best_fit_cosmological_parameter_covariance) < 0):
                 print(f"the fit didn't proceed, your errors are {np.diag(interpreter.best_fit_cosmological_parameter_covariance)}- you should probably check your data, soldier")
