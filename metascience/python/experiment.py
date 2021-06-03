@@ -34,7 +34,6 @@ class Experiment(metaclass=ABCMeta):
         self._add_noise()
         self._add_systematics()
 
-
 class CMBExperiment(Experiment):
     '''
     This class instantiates an experiment where we:
@@ -161,7 +160,7 @@ class DistanceModulusExperiment(Experiment):
                     lowest_systematics_coeff = 500,
                     seed=999):
         super().__init__()
-        self.kind = 'distmod'
+        self.kind = 'DistMod'
         self.parameters = np.concatenate([cosmology_parameters,nuisance_parameters])
         # check that this is consistent with what the cosmology needs.
         assert cosmology.n_cosmological == cosmology_parameters.size
@@ -222,15 +221,3 @@ class DistanceModulusExperiment(Experiment):
                     thissys[~np.isfinite(thissys)] = 0.
             self.systematics_vector = self.systematics_vector + thissys.real
         self.observed_data_vector = self.observed_data_vector + self.systematics_vector
-
-    def _add_systematics_devilish(self):
-        '''
-        Creating a 'boost' by multiplying the normal linear gradient of data/time
-        by a boost (driving) factor
-        adding a systematic error
-        '''
-        boost_deriv = self.systematics_parameters[0]
-        time_deriv = self.times - self.times[::-1] # compute the time deriv vector
-        data_deriv = self.ideal_data_vector - self.ideal_data_vector[::-1] #compute the data deriv vector
-        systematics_vector = boost_deriv * (data_deriv / time_deriv) # multiply the ratio of ddata/dtime by boost factor
-        self.observed_data_vector = self.observed_data_vector + systematics_vector

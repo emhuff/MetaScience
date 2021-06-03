@@ -59,7 +59,7 @@ class LCDM_age(Cosmology):
     def generate_model_data_vector(self,times,parameters):
 #        parameters = get_parameter_set()
 
-        cosmo = LambdaCDM(H0=parameters[0], Om0=parameters[1], Ode=parameters[2], Ob0=parameters[3], Tcmb0=2.725)
+        cosmo = LambdaCDM(H0=parameters[0], Om0=parameters[1], Ode0=parameters[2], Ob0=parameters[3], Tcmb0=2.725)
         model_data_vector = cosmo.age(times).value
         #not keeping units here
 

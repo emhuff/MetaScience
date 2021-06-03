@@ -11,18 +11,31 @@ truth_parameters[0]=70.
 truth_parameters[1] = 0.26
 truth_parameters[2] = 0.7
 truth_parameters[3]  = 0.04
+
+true_systematics=[np.array(0.0)]
+noise_parameters=[np.array(0.03)]
+
 # At what times are we generating the data?
-times = np.linspace(0,1,5000)
+redshifts  = np.linspace(0,1,5000)
 
 # Now generate some data with this parameter set!
-real_data = truth.generate_model_data_vector(times,parameters=truth_parameters)
+true_model = truth.generate_model_data_vector(redshifts,parameters=truth_parameters)
 
 
-# Test the model cosmology.
-model =  cosmology.LCDM_distanceModulus()
-model_parameters = model.get_parameter_set()
-model_parameters = truth_parameters
-model_data = model.generate_model_data_vector(times,parameters=model_parameters)
+experiment = DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters[i],
+                                                            cosmology_parameters=true_parameters[:truth.n_cosmological],
+                                                            nuisance_parameters=true_parameters[truth.n_cosmological:],
+                                                            systematics_parameters=true_systematics,
+                                                            noise_parameters = noise_parameters,seed=110)
+
+
+data = experiments.generate_data()
+#
+# # Test the model cosmology.
+# model =  cosmology.LCDM_distanceModulus()
+# model_parameters = model.get_parameter_set()
+# model_parameters = truth_parameters
+# model_data = model.generate_model_data_vector(times,parameters=model_parameters)
 
 # plot this.
 plt.plot(times,real_data,label='real')
