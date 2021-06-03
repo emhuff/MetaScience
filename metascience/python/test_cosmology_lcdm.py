@@ -26,8 +26,8 @@ true_model = truth.generate_model_data_vector(redshifts,parameters=truth_paramet
 
 
 experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,experimental_parameters=experimental_parameters,
-                                                            cosmology_parameters=true_parameters[:truth.n_cosmological],
-                                                            nuisance_parameters=true_parameters[truth.n_cosmological:],
+                                                            cosmology_parameters=truth_parameters[:truth.n_cosmological],
+                                                            nuisance_parameters=truth_parameters[truth.n_cosmological:],
                                                             systematics_parameters=true_systematics,
                                                             noise_parameters = noise_parameters,seed=110)
 
