@@ -16,8 +16,8 @@ true_systematics=[np.array(0.0)]
 noise_parameters=[np.array(0.03)]
 
 # At what times are we generating the data?
-redshifts = np.linspace(0.,1.,500)
-experimental_parameters={'redshifts':np.linspace(0.,1.,50)}
+redshifts = np.linspace(0.1,1.,500)
+experimental_parameters={'redshifts':np.linspace(0.1,1.,50)}
 # experimental_parameters['redshifts']=np.linspace(0.,1.,50)
 
 
@@ -35,6 +35,7 @@ experiment_instance = experiment.DistanceModulusExperiment(cosmology=truth,exper
 data = experiment_instance.generate_data()
 
 print(data) # TO DO: why is data 'None'?
+print(huh)
 
 # # Test the model cosmology.
 # model =  cosmology.LCDM_distanceModulus()
