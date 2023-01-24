@@ -5,17 +5,17 @@ consensus: # List of consensus models you want to try
   MostlyBetOnMeConsensus:
     patience: 5
     chi2_dof_threshold: 1.25
-    tolerance: 2
-  MostlyBetOnThemConsensus:
-    patience: 5
-    chi2_dof_threshold: 1.25
-    tolerance: 2
-  AlwaysBetOnMeConsensus:
-    patience: 5
-    chi2_dof_threshold: 1.25
-  AlwaysBetOnThemConsensus:
-    patience: 5
-    chi2_dof_threshold: 1.25
+    tolerance: 1
+  # MostlyBetOnThemConsensus:
+  #   patience: 5
+  #   chi2_dof_threshold: 1.25
+  #   tolerance: 2
+  # AlwaysBetOnMeConsensus:
+  #   patience: 5
+  #   chi2_dof_threshold: 1.25
+  # AlwaysBetOnThemConsensus:
+  #   patience: 5
+  #   chi2_dof_threshold: 1.25
   ShiftThatParadigmConsensus:
     chi2_dof_threshold: 1.25
   UnderestimatedErrorConsensus:
@@ -27,7 +27,7 @@ experiments:
   experiment A:
     class name: SimplePendulumExperiment
     experimental parameters:
-#      times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them. Brackets+CSV mandatory format here
+ #     times: [0.0, 0.1, 0.25, 0.5, 0.66, 0.9, 1.0] # if these are specified here, use them. Brackets+CSV mandatory format here
       times file: times_A.txt
       times description: np.linspace(2.,8.,500) from file #the script will log this as a diagnostic when running.
     noise_parameters: [0.03]
@@ -50,7 +50,8 @@ experiments:
       times description: np.linspace(0,10,500) from file
     noise_parameters: [0.1]
     true_systematics:
-      systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
+#      systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
+      systematics parameter values: [0.0007,0.,0.,0.,0.] # as an example
 #      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: 1./(np.arange(5)+1)**2 * np.random.randn(5) -- (random numbers of gently decreasing size) # The script will log this as a diagnostic when running.
     interpreter:
@@ -62,7 +63,7 @@ experiments:
 
 
 cosmology:
-  cosmology_names: [DampedDrivenOscillatorVariableGCosmology, DampedDrivenOscillatorCosmology,GaussianCosmology, AiryCosmology, CosineCosmology]
+  cosmology_names: [DampedDrivenOscillatorVariableGCosmology, DampedDrivenOscillatorCosmology, CosineCosmology]
   true_cosmology:
     class name: DampedDrivenOscillatorCosmology
     cosmological_parameters:   # Optional; if not specified, will use class defaults
