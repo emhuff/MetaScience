@@ -11,7 +11,7 @@ import ipdb
 from sim_configuration import Configuration
 import sys
 
-
+# Including bug fixes from Claude Opus 4.8
 
 # From inifile, read in:
 # - name of consensus choices, number determined by length
@@ -90,7 +90,10 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     # previously:
 #    n_systematics_parameters = [number_of_systematics for i in interpreter_names] # list of lengths
 #    starting_systematics_parameters = [np.zeros(i) for i in n_systematics_parameters]
-    systematics_parameters =  starting_systematics_parameters # why? (we overwrite starting_systematics_parameters below! re-initialize to zeros)
+    # BUGFIX: work on independent copies so we never mutate the input
+    # starting_systematics list or its arrays across runs (also de-aliases the
+    # [vec]*n case, where every element was the same array object).
+    systematics_parameters = [np.array(s, dtype=float, copy=True) for s in starting_systematics_parameters]
 
     # if we are setting starting_systematics to zero or grabbing from yaml, do we still need number_of_systematics or n_systematics_parameters ??
 
@@ -118,6 +121,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     still_ok = True
     systematics_iter = np.zeros(number_of_experiments)
     converged = False
+    this_consensus = None  
+    # define before loop so result construction never NameErrors
     # each interpreter fits a model (like different cosmic probes)
     # testing different consensus rules
 
@@ -171,7 +176,9 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
         print(f"tension: {this_consensus.is_tension}")
         this_consensus.render_judgment(number_of_tries = np.max(systematics_iter)) #render judgment
 
-        if np.max(systematics_iter) > this_consensus.patience:
+        # Note the guard patience=None consensus rules (ShiftThatParadigm,
+        # UnderestimatedError); float > None raises TypeError in Python 3.
+        if (getattr(this_consensus, 'patience', None) is not None) and (np.max(systematics_iter) > this_consensus.patience):
             print(f"Got tired of further refining experiments after {this_consensus.patience} iterations. Changing the cosmology")
         if (not this_consensus.is_tension) and (np.sum(this_consensus.systematics_judgment) == 0):
             print('No tension, and everybody fits the data yay!')
@@ -184,7 +191,8 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
                 print('Ran out of cosmologies to try!')
                 break
             this_cosmology = interpreter_cosmologies.pop()
-            systematics_parameters = starting_systematics_parameters
+            # reset to fresh copies (see note above) rather than aliasing.
+            systematics_parameters = [np.array(s, dtype=float, copy=True) for s in starting_systematics_parameters]
             for i,interpreter in enumerate(interpreters):
                 #starting_systematics_parameters = systematics_parameters[i] #[np.zeros(i) for i in n_systematics_parameters]
                 interpreters[i] = getattr(interpret,interpreter_names[i])(experiment = experiments[i], cosmology=this_cosmology,
@@ -202,6 +210,15 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
                                                                                   noise_parameters = noise_parameters[i])
 
     print('out of loop')
+    # BUGFIX: a run that stops (e.g. at max_iter) right after interpreters were
+    # re-created for the next step leaves them un-fit, and chi2 is not stored in
+    # the histories -- fit them now so the recorded final results are populated.
+    for _it in interpreters:
+        if not hasattr(_it, 'chi2'):
+            try:
+                _it.fit_model()
+            except Exception as _e:
+                print(f'could not fit final interpreter state: {_e}')
     #
     '''
     Now what? Summarize what we know.
@@ -217,18 +234,24 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
     result.true_systematics = true_systematics
     result.interpreter_names = interpreter_names
     result.interpreter_cosmologies = [thing.name for thing in interpreter_cosmologies]
-    result.data_chi2 = [thing.chi2 for thing in interpreters]
+    # BUGFIX: interpreters re-created on a cosmology swap (or at max_iter) may
+    # not have been re-fit yet, so guard the chi2 lookup instead of crashing.
+    result.data_chi2 = [getattr(thing, 'chi2', np.nan) for thing in interpreters]
     result.experimental_parameters = experimental_parameters
     result.noise_parameters = noise_parameters
     result.converged = converged
     result.iterations = iter
     result.final_cosmology = this_cosmology.name
-    result.final_tension_metric = this_consensus.tm
-    result.consensus_cosmological_parameters = this_consensus.consensus_cosmological_parameters
+    # BUGFIX: this_consensus is None if the run stopped before any consensus step
+    # (e.g. a failed fit on the first iteration); guard rather than NameError.
+    result.final_tension_metric = this_consensus.tm if this_consensus is not None else None
+    result.consensus_cosmological_parameters = (this_consensus.consensus_cosmological_parameters
+                                                if this_consensus is not None else None)
     result.cosmological_parameter_names = this_cosmology.cosmological_parameter_names
     #result.nuisance_parameters = this_consensus.best_fit_nuisance_parameters
     #result.nuisance_parameter_names = this_cosmology.nuisance_parameter_names
-    result.consensus_parameter_covariance = this_consensus.consensus_parameter_covariance
+    result.consensus_parameter_covariance = (this_consensus.consensus_parameter_covariance
+                                             if this_consensus is not None else None)
 
     # Store the histories, too (cosmological parameters, nuisance parameters, etc.).
     result.histories = histories
