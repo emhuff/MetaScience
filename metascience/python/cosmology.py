@@ -2,6 +2,8 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.integrate import solve_ivp as solver
 from scipy import special as sp
+if not hasattr(np, 'in1d'):
+    np.in1d = np.isin
 from astropy.cosmology import LambdaCDM
 
 class Cosmology(metaclass = ABCMeta):

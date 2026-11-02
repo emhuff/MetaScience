@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import scipy
-import cosmology 
+#import cosmology 
 import ipdb
 import matplotlib.pyplot as plt
 
