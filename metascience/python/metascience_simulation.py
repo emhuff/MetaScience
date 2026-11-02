@@ -143,7 +143,7 @@ def run_consensus_compare(consensus_name, experiment_names, interpreter_names,
             histories[i]['cosmological_model_history'].append(this_cosmology.name)
             #cosmological_model_history.append(this_cosmology.name)
             histories[i]['cosmological_parameter_history'].append(interpreter.best_fit_cosmological_parameters)
-            histories[i]['nuisance_parameter_history'].append(interpreter.best_fit_cosmological_parameters)
+            histories[i]['nuisance_parameter_history'].append(interpreter.best_fit_nuisance_parameters) 
             histories[i]['systematics_parameter_history'].append(interpreter.best_fit_systematics_parameters)
             histories[i]['cosmological_parameter_covariance_history'].append(interpreter.best_fit_cosmological_parameter_covariance)
 

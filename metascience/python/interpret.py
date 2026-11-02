@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import scipy
-#import cosmology ???
+import cosmology 
 import ipdb
 import matplotlib.pyplot as plt
 
@@ -118,6 +118,10 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         self.covariance = np.diag(np.zeros_like(self.measured_data_vector)
             + noise_parameters[0]**2)
         self.inverse_covariance = np.linalg.inv(self.covariance)
+        # Whitening matrix W with W.T @ W == inverse_covariance, so that
+        # (W @ delta) . (W @ delta) == delta.T @ inverse_covariance @ delta == chi^2.
+        # This is the residual a least-squares solver actually needs.
+        self.whitening_matrix = np.linalg.cholesky(self.inverse_covariance)
         self.times = experiment.times
         ## The below parameters are stored by name in the experiment module.
         self.starting_systematics_parameters = starting_systematics_parameters
@@ -188,7 +192,12 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
             # calcualte chisq
 
             chisq = np.dot(delta.T, np.dot(self.inverse_covariance,delta))
-            chi = np.dot(self.inverse_covariance,delta)
+            # BUGFIX: the residual handed to the least-squares solver must be the
+            # *whitened* residual (units of sigma) so that sum(chi**2) == chisq.
+            # Previously this returned inverse_covariance @ delta (= delta/sigma**2),
+            # which gives the right minimum for uniform diagonal noise and mis-scales 
+            # the solver's cov_x for non-uniform noise.
+            chi = np.dot(self.whitening_matrix.T, delta)
 
             syspars = parameters[self.cosmology.n_parameters:]
             syspars_prior = .0001/(np.arange(len(syspars))+1)
@@ -208,13 +217,18 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
 
             param_derivs = np.zeros((self.times.size,parameters.size)) # Derivatives of the model wrt to the parameters
             for iparam in range(parameters.size):
+                # BUGFIX: use an absolute step floor so a parameter whose best-fit
+                # value is ~0 (e.g. a phase) does not give a 0/0 derivative -> NaN.
+                step = step_size * parameters[iparam]
+                if step == 0:
+                    step = step_size
                 param_p = parameters.copy()
-                param_p[iparam] = param_p[iparam] + step_size * parameters[iparam]
+                param_p[iparam] = param_p[iparam] + step
                 dmp = eval_model(param_p)
                 param_m = parameters.copy()
-                param_m[iparam] = param_m[iparam] - step_size * parameters[iparam]
+                param_m[iparam] = param_m[iparam] - step
                 dmm = eval_model(param_m)
-                param_derivs[:,iparam] = (dmp - dmm) / (2*step_size*parameters[iparam])
+                param_derivs[:,iparam] = (dmp - dmm) / (2*step)
 
             Fisher = np.zeros((parameters.size,parameters.size))
             for iparam in range(parameters.size):
@@ -269,19 +283,24 @@ class SimplePendulumExperimentInterpreter(ExperimentInterpreter):
         # pcov(absolute_sigma=False) = pcov(absolute_sigma=True) * chisq(popt)/(M-N)
         try:
             relCovmat = best_fit_parameters.cov_x[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
-            absCovmat = relCovmat*(len(self.times)-self.cosmology.n_cosmological)/self.chi2
+            # BUGFIX: absolute covariance = relative covariance * chi2/(M-N)
+            absCovmat = relCovmat*self.chi2/(len(self.times)-self.cosmology.n_cosmological)
             self.best_fit_cosmological_parameter_covariance = absCovmat
         except:
             self.best_fit_cosmological_parameter_covariance = -1*np.eye(self.cosmology.n_cosmological)
             print(f"fit failed to coverge because: {best_fit_parameters.message} ")
             print('covariance is None: setting to -1')
-        # removing the Fisher for now to test the consensu module that blows up errors
         fullcov = _Fisher_covariance(evaluate_logL,best_fit_parameters.x,check=True)
-        #print(fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological])
-        #print('huh covariance')
-        #print(self.best_fit_cosmological_parameter_covariance)
-        # Uncomment below to use Fisher covariance
-        self.best_fit_cosmological_parameter_covariance = fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+        # BUGFIX: the Fisher matrix is the *formal* covariance assuming the model is
+        # correct. When the interpreter fits the wrong model the fit is poor
+        # (chi2/dof >> 1) and the true parameter uncertainty is larger by ~chi2/dof.
+        # Rescale by chi2/dof (the absolute_sigma=False
+        # convention referenced above). max(1, .) which avoids shrinking errors on a good
+        # fit; drop the max() to reproduce curve_fit's exact behaviour.
+        dof = len(self.times) - self.cosmology.n_parameters
+        chi2_per_dof = self.chi2 / dof
+        fisher_cosmo = fullcov[:self.cosmology.n_cosmological,:self.cosmology.n_cosmological]
+        self.best_fit_cosmological_parameter_covariance = fisher_cosmo * max(chi2_per_dof, 1.0)
         # apply success flag from fit parameters to fit status
         self.fit_status = best_fit_parameters.success
 

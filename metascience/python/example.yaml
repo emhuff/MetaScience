@@ -38,9 +38,9 @@ experiments:
     interpreter:
       class name: SimplePendulumExperimentInterpreter
       starting_systematics_parameters:
-        systematics parameter values: [0.] # If this is specified, use it. Otherwise, look in the file in the next line.
+        systematics parameter values: [-0.24644419] # If this is specified, use it. Otherwise, look in the file in the next line.
         #systematics parameter file: # If the parameter values aren't specified in the config, read them from this file.
-      noise_parameters: [0.03] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
+      noise_parameters: [0.05] # This is the noise model the interpreter will use, which may or may not be the same as the experiment's actual noise model above
 
   experiment B:
     class name: SimplePendulumExperiment
@@ -48,10 +48,10 @@ experiments:
 #      times: # if reading from a file, do not define a 'times' key
       times file: times_B.txt
       times description: np.linspace(0,10,500) from file
-    noise_parameters: [0.1]
+    noise_parameters: [0.03]
     true_systematics:
 #      systematics parameter values: [-0.74554926, -0.24644419, -0.09371895,  0.06109715,  0.00779505] # as an example
-      systematics parameter values: [0.0007,0.,0.,0.,0.] # as an example
+      systematics parameter values: [0.1562517 ] # as an example
 #      systematics parameter file: # If the parameter values aren't specified above, read them from a file.
       systematics description: 1./(np.arange(5)+1)**2 * np.random.randn(5) -- (random numbers of gently decreasing size) # The script will log this as a diagnostic when running.
     interpreter:
